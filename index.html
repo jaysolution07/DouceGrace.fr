@@ -1,0 +1,2200 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Douce Grâce Créations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Dancing+Script:wght@600;700&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --beige:       #f0e8dc;
+  --beige-light: #f8f3ed;
+  --beige-mid:   #e4d5c1;
+  --beige-dark:  #c9b49a;
+  --navy:        #1e2d4a;
+  --navy-mid:    #2e4268;
+  --navy-light:  #4a6490;
+  --white:       #ffffff;
+  --text:        #3a3028;
+  --text-light:  #7a6e65;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Jost', sans-serif;
+  background: var(--beige-light);
+  color: var(--text);
+  overflow-x: hidden;
+}
+
+/* ── PAGE SYSTEM ── */.page {
+  display: none;
+  min-height: 100vh;
+  flex-direction: column;
+}
+
+.page.active {
+  display: flex;
+}
+
+/* ── NAV ── */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 40px;
+  background: rgba(248, 243, 237, 0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(201,180,154,0.3);
+  transition: box-shadow 0.3s;
+}
+nav.scrolled { box-shadow: 0 4px 24px rgba(30,45,74,0.08); }
+
+.nav-brand {
+  font-family: 'Dancing Script', cursive;
+  font-size: 22px;
+  color: var(--navy);
+  cursor: pointer;
+  letter-spacing: 0.5px;
+}
+
+.nav-links {
+  display: flex;
+  gap: 32px;
+  list-style: none;
+}
+.nav-links a {
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: var(--text-light);
+  text-decoration: none;
+  transition: color 0.2s;
+  cursor: pointer;
+}
+.nav-links a:hover { color: var(--navy); }
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.nav-tel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  color: var(--navy-mid);
+  text-decoration: none;
+  border: 1px solid var(--beige-dark);
+  padding: 8px 14px;
+  border-radius: 50px;
+  transition: all 0.2s;
+}
+.nav-tel:hover { background: var(--navy); color: white; border-color: var(--navy); }
+
+.cart-btn {
+  position: relative;
+  background: var(--navy);
+  color: white;
+  border: none;
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.cart-btn:hover { transform: scale(1.08); box-shadow: 0 4px 16px rgba(30,45,74,0.25); }
+.cart-count {
+  position: absolute;
+  top: -4px; right: -4px;
+  background: #c8806a;
+  color: white;
+  font-size: 9px;
+  font-weight: 700;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  display: none;
+}
+.cart-count.visible { display: flex; }
+
+/* ── HERO ── */
+.hero {
+  min-height: 75vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+  padding: 120px 40px 40px;
+  position: relative;
+  background: var(--beige-light);
+  overflow: hidden;
+  isolation: isolate;
+}
+#hero-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+.hero > *:not(#hero-canvas) {
+  position: relative;
+  z-index: 2;
+}
+
+/* SVG logo cigogne */
+.hero-logo {
+  animation: floatIn 1s ease forwards;
+  opacity: 0;
+  margin-bottom: 32px;
+}
+@keyframes floatIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.logo-circle {
+  animation: floatIn 1s 0.2s ease forwards;
+  opacity: 0;
+}
+
+.hero-title {
+  font-family: 'Dancing Script', cursive;
+  font-size: clamp(48px, 8vw, 80px);
+  color: var(--navy);
+  line-height: 1;
+  margin-bottom: 8px;
+  animation: floatIn 1s 0.3s ease forwards;
+  opacity: 0;
+}
+
+.hero-sub {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 16px;
+  color: var(--text-light);
+  letter-spacing: 3px;
+  margin-bottom: 48px;
+  animation: floatIn 1s 0.5s ease forwards;
+  opacity: 0;
+}
+
+.hero-desc {
+  max-width: 520px;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 19px;
+  line-height: 1.8;
+  color: var(--text-light);
+  margin-bottom: 48px;
+  animation: floatIn 1s 0.7s ease forwards;
+  opacity: 0;
+}
+
+.hero-cta {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+  animation: floatIn 1s 0.9s ease forwards;
+  opacity: 0;
+}
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 32px;
+  border-radius: 50px;
+  font-family: 'Jost', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s;
+  border: none;
+  text-decoration: none;
+}
+.btn-primary {
+  background: var(--navy);
+  color: white;
+  box-shadow: 0 6px 24px rgba(30,45,74,0.2);
+}
+.btn-primary:hover { background: var(--navy-mid); transform: translateY(-2px); box-shadow: 0 10px 32px rgba(30,45,74,0.3); }
+.btn-outline {
+  background: transparent;
+  color: var(--navy);
+  border: 1.5px solid var(--navy);
+}
+.btn-outline:hover { background: var(--navy); color: white; transform: translateY(-2px); }
+.btn-soft {
+  background: var(--beige-mid);
+  color: var(--navy);
+  border: none;
+}
+.btn-soft:hover { background: var(--beige-dark); transform: translateY(-2px); }
+
+/* ── DIVIDER ── */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  max-width: 400px;
+  margin: 0 auto 60px;
+  color: var(--beige-dark);
+}
+.divider::before, .divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--beige-dark);
+}
+.divider-icon { font-size: 18px; }
+
+/* ── SHOP PAGE ── */
+.shop-header {
+  padding: 100px 40px 40px;
+  background: var(--beige-light);
+  text-align: center;
+  border-bottom: 1px solid var(--beige-mid);
+}
+
+.shop-title {
+  font-family: 'Dancing Script', cursive;
+  font-size: 42px;
+  color: var(--navy);
+  margin-bottom: 8px;
+}
+
+.shop-sub {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 16px;
+  color: var(--text-light);
+  margin-bottom: 32px;
+}
+
+/* search + filters */
+.shop-controls {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+}
+
+.search-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 220px;
+  max-width: 340px;
+}
+.search-wrap input {
+  width: 100%;
+  padding: 12px 20px 12px 42px;
+  border-radius: 50px;
+  border: 1.5px solid var(--beige-mid);
+  background: white;
+  font-family: 'Jost', sans-serif;
+  font-size: 13px;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.search-wrap input:focus { border-color: var(--navy-light); }
+.search-wrap::before {
+  content: "🔍";
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+}
+
+.filter-btn {
+  padding: 11px 20px;
+  border-radius: 50px;
+  border: 1.5px solid var(--beige-mid);
+  background: white;
+  font-family: 'Jost', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-light);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.filter-btn.active, .filter-btn:hover {
+  background: var(--navy);
+  color: white;
+  border-color: var(--navy);
+}
+
+/* products grid */
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 28px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 48px 40px 80px;
+}
+#products-grid,
+#fabrics-grid {
+  flex: 1;
+  align-content: start;
+}
+.product-card {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--beige-mid);
+  transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  cursor: pointer;
+}
+.product-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 50px rgba(30,45,74,0.12);
+  border-color: var(--beige-dark);
+}
+
+.product-img {
+  width: 100%;
+  height: 240px;
+  background: var(--beige);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+.product-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+.product-card:hover .product-img img { transform: scale(1.05); }
+
+.product-img-placeholder {
+  font-size: 48px;
+  color: var(--beige-dark);
+  text-align: center;
+}
+
+.product-badge {
+  position: absolute;
+  top: 12px; left: 12px;
+  background: var(--navy);
+  color: white;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 50px;
+}
+.product-badge.custom { background: #c8806a; }
+
+.product-info { padding: 20px; }
+.product-cat {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-light);
+  margin-bottom: 6px;
+}
+.product-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--navy);
+  margin-bottom: 6px;
+  line-height: 1.2;
+}
+.product-desc {
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--text-light);
+  line-height: 1.6;
+  margin-bottom: 14px;
+}
+.product-price {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--navy);
+  margin-bottom: 14px;
+}
+
+.product-actions { display: flex; gap: 8px; }
+.product-actions .btn {
+  flex: 1;
+  justify-content: center;
+  font-size: 11px;
+  padding: 10px 12px;
+}
+
+/* fabric swatches */
+.fabric-section { margin-bottom: 14px; }
+.fabric-label {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-light);
+  margin-bottom: 8px;
+}
+.fabric-swatches {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.swatch {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.2s, border-color 0.2s;
+  position: relative;
+}
+.swatch:hover { transform: scale(1.15); }
+.swatch.selected { border-color: var(--navy); }
+.swatch[title]::after {
+  content: attr(title);
+  position: absolute;
+  bottom: 32px; left: 50%;
+  transform: translateX(-50%);
+  background: var(--navy);
+  color: white;
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+.swatch:hover::after { opacity: 1; }
+
+/* ── CART PANEL ── */
+.cart-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(30,45,74,0.4);
+  backdrop-filter: blur(4px);
+  z-index: 800;
+}
+.cart-overlay.active { display: block; }
+
+.cart-panel {
+  position: fixed;
+  top: 0; right: -420px;
+  width: 420px;
+  height: 100vh;
+  background: white;
+  z-index: 900;
+  display: flex;
+  flex-direction: column;
+  transition: right 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  box-shadow: -10px 0 40px rgba(30,45,74,0.15);
+}
+.cart-panel.active { right: 0; }
+
+.cart-head {
+  padding: 28px 28px 20px;
+  border-bottom: 1px solid var(--beige-mid);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.cart-head h2 {
+  font-family: 'Dancing Script', cursive;
+  font-size: 26px;
+  color: var(--navy);
+}
+.cart-close {
+  background: var(--beige);
+  border: none;
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-light);
+  transition: background 0.2s;
+}
+.cart-close:hover { background: var(--beige-mid); }
+
+.cart-items {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 28px;
+}
+
+.cart-empty {
+  text-align: center;
+  padding: 60px 0;
+  color: var(--text-light);
+}
+.cart-empty-icon { font-size: 48px; margin-bottom: 16px; }
+.cart-empty p {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 18px;
+}
+
+.cart-item {
+  display: flex;
+  gap: 14px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--beige-light);
+  align-items: flex-start;
+}
+.cart-item-img {
+  width: 70px; height: 70px;
+  border-radius: 10px;
+  background: var(--beige);
+  flex-shrink: 0;
+  overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px;
+}
+.cart-item-img img { width: 100%; height: 100%; object-fit: cover; }
+.cart-item-info { flex: 1; }
+.cart-item-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--navy);
+  margin-bottom: 4px;
+}
+.cart-item-detail {
+  font-size: 11px;
+  color: var(--text-light);
+  margin-bottom: 8px;
+}
+.cart-item-qty {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.qty-btn {
+  width: 24px; height: 24px;
+  border: 1px solid var(--beige-mid);
+  background: white;
+  border-radius: 50%;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s;
+  color: var(--navy);
+}
+.qty-btn:hover { background: var(--beige); }
+.qty-val { font-size: 14px; font-weight: 500; min-width: 20px; text-align: center; }
+.cart-item-price {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--navy);
+  white-space: nowrap;
+}
+.cart-item-remove {
+  background: none; border: none; cursor: pointer;
+  color: #c8806a; font-size: 16px; padding: 4px;
+  transition: transform 0.2s;
+}
+.cart-item-remove:hover { transform: scale(1.2); }
+
+.cart-foot {
+  padding: 20px 28px 28px;
+  border-top: 1px solid var(--beige-mid);
+}
+.cart-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.cart-total-label {
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-light);
+}
+.cart-total-amount {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--navy);
+}
+
+.cart-note {
+  font-size: 12px;
+  color: var(--text-light);
+  margin-bottom: 16px;
+  line-height: 1.5;
+  font-style: italic;
+}
+
+/* ── ORDER MODAL ── */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(30,45,74,0.5);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.active { display: flex; }
+
+.modal {
+  background: white;
+  border-radius: 24px;
+  padding: 44px;
+  width: 100%;
+  max-width: 480px;
+  position: relative;
+  box-shadow: 0 40px 80px rgba(30,45,74,0.2);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-logo {
+  text-align: center;
+  margin-bottom: 24px;
+}
+.modal h2 {
+  font-family: 'Dancing Script', cursive;
+  font-size: 30px;
+  color: var(--navy);
+  text-align: center;
+  margin-bottom: 6px;
+}
+.modal-sub {
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-light);
+  margin-bottom: 28px;
+  font-style: italic;
+  font-family: 'Cormorant Garamond', serif;
+}
+
+.form-group { margin-bottom: 16px; }
+.form-group label {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-light);
+  margin-bottom: 6px;
+}
+.form-group input, .form-group textarea, .form-group select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1.5px solid var(--beige-mid);
+  border-radius: 10px;
+  font-family: 'Jost', sans-serif;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--beige-light);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.form-group input:focus, .form-group textarea:focus { border-color: var(--navy-light); }
+.form-group textarea { height: 100px; resize: vertical; }
+
+.modal-order-summary {
+  background: var(--beige-light);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+.modal-order-summary h4 {
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-light);
+  margin-bottom: 12px;
+}
+.modal-order-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  padding: 4px 0;
+  color: var(--text);
+}
+.modal-order-total {
+  border-top: 1px solid var(--beige-mid);
+  margin-top: 10px;
+  padding-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--navy);
+}
+
+.modal-actions { display: flex; gap: 12px; margin-top: 24px; }
+.modal-actions .btn { flex: 1; justify-content: center; }
+
+.close-btn {
+  position: absolute;
+  top: 16px; right: 16px;
+  background: var(--beige);
+  border: none;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-light);
+  transition: background 0.2s;
+}
+.close-btn:hover { background: var(--beige-mid); }
+
+/* ── DETAIL MODAL ── */
+.detail-modal {
+  max-width: 700px;
+  display: flex;
+  gap: 32px;
+}
+.detail-img {
+  width: 280px;
+  flex-shrink: 0;
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--beige);
+  display: flex; align-items: center; justify-content: center;
+  min-height: 280px;
+  font-size: 60px;
+}
+.detail-img img { width: 100%; height: 100%; object-fit: cover; }
+.detail-info { flex: 1; padding-top: 4px; }
+.detail-info .product-cat { margin-bottom: 8px; }
+.detail-info .product-name { font-size: 26px; margin-bottom: 10px; }
+.detail-info .product-desc { margin-bottom: 16px; }
+.detail-info .product-price { margin-bottom: 20px; }
+
+/* ── SUCCESS STATE ── */
+.success-state {
+  text-align: center;
+  padding: 40px 0;
+}
+.success-icon { font-size: 56px; margin-bottom: 16px; }
+.success-state h3 {
+  font-family: 'Dancing Script', cursive;
+  font-size: 28px;
+  color: var(--navy);
+  margin-bottom: 10px;
+}
+.success-state p { font-size: 14px; color: var(--text-light); line-height: 1.6; }
+
+/* ── REVEAL ── */
+.reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.reveal.visible { opacity: 1; transform: none; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  nav { padding: 14px 20px; }
+  .nav-links { display: none; }
+  .hero { padding: 100px 24px 60px; }
+  .products-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); padding: 32px 20px; }
+  .cart-panel { width: 100%; right: -100%; }
+  .detail-modal { flex-direction: column; }
+  .detail-img { width: 100%; height: 220px; }
+  .shop-header { padding: 90px 20px 32px; }
+  .modal { padding: 28px 20px; }
+}
+
+.no-results {
+  text-align: center;
+  padding: 80px 0;
+  color: var(--text-light);
+  grid-column: 1 / -1;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 20px;
+}
+
+/* ── FEATURES STRIP (hero) ── */
+.features-strip {
+  display: flex;
+  justify-content: center;
+  gap: 48px;
+  padding: 48px 40px;
+  background: white;
+  border-top: 1px solid var(--beige-mid);
+  border-bottom: 1px solid var(--beige-mid);
+  flex-wrap: wrap;
+}
+.feature-item {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.feature-icon { font-size: 28px; }
+.feature-text {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-light);
+}
+
+/* ── ABOUT (hero page) ── */
+.about-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 80px 40px;
+  align-items: center;
+}
+.about-text { padding-right: 60px; }
+.about-text .section-label {
+  font-size: 11px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--navy-light);
+  margin-bottom: 12px;
+}
+.about-text h2 {
+  font-family: 'Dancing Script', cursive;
+  font-size: 42px;
+  color: var(--navy);
+  margin-bottom: 20px;
+  line-height: 1.1;
+}
+.about-text p {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px;
+  line-height: 1.8;
+  color: var(--text-light);
+  margin-bottom: 14px;
+}
+.about-visual {
+  background: var(--beige);
+  border-radius: 24px;
+  height: 380px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+.about-visual-inner { text-align: center; }
+.about-visual-icon { font-size: 80px; margin-bottom: 16px; display: block; }
+.about-visual p {
+  font-family: 'Dancing Script', cursive;
+  font-size: 24px;
+  color: var(--navy);
+}
+
+@media (max-width: 768px) {
+  .about-section { grid-template-columns: 1fr; }
+  .about-text { padding-right: 0; margin-bottom: 32px; }
+  .features-strip { gap: 24px; }
+}
+.skeleton-box,
+.skeleton-line {
+  background: linear-gradient(
+    90deg,
+    #f0e8dc 25%,
+    #f8f3ed 50%,
+    #f0e8dc 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.2s infinite linear;
+  border-radius: 12px;
+}
+
+.skeleton-line {
+  display: block;
+}
+
+@keyframes skeleton-loading {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+/* ══════════════════════════════════
+   RESPONSIVE PREMIUM MOBILE + TABLETTE
+══════════════════════════════════ */
+@media (max-width: 1024px) {
+  nav {
+    padding: 14px 18px;
+    gap: 12px;
+  }
+
+  .nav-brand {
+    font-size: 18px;
+  }
+
+  .nav-right {
+    gap: 10px;
+  }
+
+  .nav-tel {
+    font-size: 11px;
+    padding: 8px 12px;
+  }
+
+  .hero {
+    padding: 100px 20px 50px;
+  }
+
+  .hero-title {
+    font-size: clamp(38px, 8vw, 62px);
+  }
+
+  .hero-sub {
+    font-size: 14px;
+    letter-spacing: 2px;
+  }
+
+  .hero-desc {
+    font-size: 17px;
+    line-height: 1.7;
+  }
+
+  .about-section {
+    grid-template-columns: 1fr;
+    gap: 30px;
+    padding: 60px 20px;
+  }
+
+  .about-text {
+    padding-right: 0;
+  }
+
+  .about-visual {
+    height: 260px;
+  }
+
+  .products-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+    padding: 30px 20px 60px;
+  }
+
+  .detail-modal {
+    flex-direction: column;
+    max-width: 95vw;
+  }
+
+  .detail-img {
+    width: 100%;
+    min-height: 220px;
+  }
+
+  .cart-panel {
+    width: min(420px, 100vw);
+  }
+
+  #legal {
+    padding: 50px 20px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .nav-links {
+    display: none;
+  }
+
+  .nav-tel {
+    display: none;
+  }
+
+  .hero-cta,
+  .modal-actions,
+  .product-actions {
+    flex-direction: column;
+  }
+
+  .hero-cta .btn,
+  .modal-actions .btn,
+  .product-actions .btn {
+    width: 100%;
+  }
+
+  .products-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .product-img {
+    height: 220px;
+  }
+
+  .shop-header {
+    padding: 85px 16px 24px;
+  }
+
+  .shop-title {
+    font-size: 34px;
+  }
+
+  .shop-sub {
+    font-size: 14px;
+  }
+
+  .search-wrap {
+    min-width: 100%;
+    max-width: 100%;
+  }
+
+  .modal {
+    padding: 22px 16px;
+    border-radius: 18px;
+  }
+
+  .cart-items,
+  .cart-foot,
+  .cart-head {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  footer {
+    padding: 30px 16px !important;
+    font-size: 11px !important;
+    line-height: 1.8;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-title {
+    font-size: 42px;
+  }
+
+  .hero-desc {
+    font-size: 16px;
+  }
+
+  .btn {
+    padding: 12px 18px;
+    font-size: 11px;
+    letter-spacing: 1px;
+  }
+
+  .about-text h2 {
+    font-size: 34px;
+  }
+
+  .about-text p {
+    font-size: 17px;
+  }
+
+  .cart-panel {
+    width: 100vw;
+  }
+
+  .cart-total-amount {
+    font-size: 22px;
+  }
+
+  .detail-info .product-name {
+    font-size: 22px;
+  }
+
+  .detail-info .product-price {
+    font-size: 22px;
+  }
+}
+/* ── HERO FOND TEXTILE LUXE ── */
+.hero {
+  position: relative;
+  isolation: isolate;
+}
+
+/* hero bg handled by canvas */
+  50% { opacity: 1; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav id="main-nav">
+  <div class="nav-brand" onclick="showPage('home')">Douce Grâce</div>
+  <ul class="nav-links">
+    <li><a onclick="showPage('home')">Accueil</a></li>
+    <li><a onclick="showPage('shop')">Boutique</a></li>
+    <li><a onclick="showPage('fabrics')">Tissus</a></li>
+    <li><a onclick="scrollToContact()">Contact</a></li>
+  </ul>
+  <div class="nav-right">
+    <a href="tel:0750483818" class="nav-tel">📞 07 50 48 38 18</a>
+    <button class="cart-btn" onclick="toggleCart()">
+      🛒
+      <span class="cart-count" id="cart-count">0</span>
+    </button>
+  </div>
+</nav>
+
+<!-- ══════════════════ HOME PAGE ══════════════════ -->
+<div class="page active" id="page-home">
+
+  <!-- HERO -->
+  <section class="hero">
+<canvas id="hero-canvas"></canvas>
+    <!-- Logo PNG -->
+    <div class="hero-logo">
+      <img src="dglog.png" alt="Douce Grâce Créations" style="width:clamp(180px,35vw,260px);height:auto;filter:drop-shadow(0 4px 24px rgba(30,45,74,0.12));animation:floatIn 1s 0.2s ease forwards;opacity:0;">
+    </div>
+
+
+    <h1 class="hero-title">Douce Grâce</h1>
+    <p class="hero-sub">Créations Couture</p>
+
+    <p class="hero-desc">
+      Des créations uniques faites à la main avec amour. Chaque pièce est confectionnée sur mesure selon vos envies et votre choix de tissus.
+    </p>
+
+    <div class="hero-cta">
+      <button class="btn btn-primary" onclick="showPage('shop')">✨ Voir la boutique</button>
+      <a href="tel:0750483818" class="btn btn-outline">📞 Nous appeler</a>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <div class="features-strip reveal">
+    <div class="feature-item">
+      <span class="feature-icon">🧵</span>
+      <span class="feature-text">Fait main</span>
+    </div>
+    <div class="feature-item">
+      <span class="feature-icon">🎨</span>
+      <span class="feature-text">Tissus au choix</span>
+    </div>
+    <div class="feature-item">
+      <span class="feature-icon">📐</span>
+      <span class="feature-text">Sur mesure</span>
+    </div>
+    <div class="feature-item">
+      <span class="feature-icon">💌</span>
+      <span class="feature-text">Commande simple</span>
+    </div>
+  </div>
+
+  <!-- ABOUT -->
+  <div class="about-section">
+    <div class="about-text reveal">
+      <p class="section-label">Notre histoire</p>
+      <h2>L'art de coudre avec Grâce</h2>
+      <p>Passionnée de couture depuis toujours, je crée des pièces uniques qui allient élégance, confort et personnalité.</p>
+      <p>Chaque création est pensée pour vous — des robes aux tenues enfants, en passant par les accessoires, tout peut être réalisé dans le tissu de votre choix.</p>
+      <div style="margin-top:32px;display:flex;gap:16px;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="showPage('shop')">Voir les créations →</button>
+        <a href="tel:0750483818" class="btn btn-soft">📞 07 50 48 38 18</a>
+      </div>
+    </div>
+    <div class="about-visual reveal">
+  <div class="about-visual-inner" id="brand-photo-box">
+    <span class="about-visual-icon">🧵</span>
+    <p>Chaque point compte</p>
+  </div>
+</div>
+</div>
+
+  <!-- LEGAL SECTION -->
+  <section id="legal" style="padding:60px 40px;background:var(--beige-light);border-top:1px solid var(--beige-mid);">
+    <div style="max-width:700px;margin:0 auto;text-align:center;">
+
+      <div style="display:flex;gap:16px;justify-content:center;margin-bottom:30px;flex-wrap:wrap;">
+        <button class="legal-toggle" data-target="mentions" style="display:flex;align-items:center;gap:8px;padding:12px 20px;border-radius:30px;border:1px solid var(--beige-dark);background:var(--beige);color:var(--navy);cursor:pointer;font-family:'Jost',sans-serif;font-size:12px;font-weight:500;letter-spacing:1px;text-transform:uppercase;transition:0.3s;">
+          Mentions légales <span>⌄</span>
+        </button>
+        <button class="legal-toggle" data-target="confidentialite" style="display:flex;align-items:center;gap:8px;padding:12px 20px;border-radius:30px;border:1px solid var(--beige-dark);background:var(--beige);color:var(--navy);cursor:pointer;font-family:'Jost',sans-serif;font-size:12px;font-weight:500;letter-spacing:1px;text-transform:uppercase;transition:0.3s;">
+          Confidentialité <span>⌄</span>
+        </button>
+      </div>
+
+      <div id="mentions" style="max-height:0;overflow:hidden;opacity:0;transition:all 0.4s ease;text-align:left;">
+        <div style="background:white;border-radius:16px;padding:32px;border:1px solid var(--beige-mid);color:var(--text-light);font-size:14px;line-height:1.8;">
+          <h2 style="font-family:'Dancing Script',cursive;font-size:28px;color:var(--navy);margin-bottom:20px;">Mentions légales</h2>
+          <p style="margin-bottom:14px;">
+  <strong style="color:var(--text);">Éditeur du site :</strong><br>
+  JaySolution<br>
+  07400 Saint-Martin-sur-Lavezon<br>
+  Téléphone : 06 77 71 89 14<br>
+ Email :
+<a href="mailto:contact@jaysolution.fr" style="color:inherit;text-decoration:none;">
+  jaysolution07@gmail.com
+</a>
+</p>
+          <p style="margin-bottom:14px;"><strong style="color:var(--text);">Responsable de la publication :</strong><br>
+          Douce Grâce Créations</p>
+          <p><strong style="color:var(--text);">Hébergement :</strong><br>
+          GitHub Pages — GitHub, Inc.<br>
+          88 Colin P Kelly Jr St, San Francisco, CA 94107, USA</p>
+        </div>
+      </div>
+
+      <div id="confidentialite" style="max-height:0;overflow:hidden;opacity:0;transition:all 0.4s ease;text-align:left;">
+        <div style="background:white;border-radius:16px;padding:32px;border:1px solid var(--beige-mid);color:var(--text-light);font-size:14px;line-height:1.8;">
+          <h2 style="font-family:'Dancing Script',cursive;font-size:28px;color:var(--navy);margin-bottom:20px;">Confidentialité</h2>
+          <p style="margin-bottom:14px;">Les données collectées via le formulaire de commande (nom, téléphone, email, message) sont utilisées uniquement pour répondre aux demandes et traiter les commandes.</p>
+          <p style="margin-bottom:14px;">Aucune donnée n'est vendue ou utilisée à des fins commerciales.</p>
+          <p style="margin-bottom:14px;">Les informations sont conservées pendant une durée maximale de 12 mois.</p>
+          <p style="margin-bottom:14px;">Conformément au RGPD, vous pouvez demander l'accès, la modification ou la suppression de vos données à tout moment en contactant : <a href="mailto:doucegrace.creations@gmail.com" style="color:inherit;text-decoration:none;">
+  doucegrace.creations@gmail.com
+</a></p>
+          <p><strong style="color:var(--text);">Cookies :</strong><br>
+          Ce site n'utilise pas de cookies à des fins de suivi ou d'analyse.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer style="text-align:center;padding:40px;background:var(--navy);color:rgba(255,255,255,0.5);font-size:12px;letter-spacing:1px;">
+    <div style="font-family:'Dancing Script',cursive;font-size:22px;color:white;margin-bottom:12px;">Douce Grâce Créations</div>
+    <div style="margin-bottom:8px;">
+  📧 <a href="mailto:doucegrace.creations@gmail.com" style="color:inherit;text-decoration:none;">
+    doucegrace.creations@gmail.com
+  </a>
+  &nbsp;·&nbsp; 📞 07 50 48 38 18
+</div>
+<div style="margin-bottom:8px;">📍 07400 Saint-Martin-sur-Lavezon</div>
+    <div style="margin-bottom:12px;">© 2025 Douce Grâce · Tous droits réservés</div>
+    <div><a href="#legal" onclick="showPage('home')" style="color:rgba(255,255,255,0.35);text-decoration:none;font-size:11px;">Mentions légales</a></div>
+  </footer>
+</div>
+
+
+<!-- ══════════════════ SHOP PAGE ══════════════════ -->
+<div class="page" id="page-shop">
+
+  <div class="shop-header">
+    <h1 class="shop-title">La Boutique</h1>
+    <p class="shop-sub">Créations uniques, tissus au choix</p>
+    <div class="shop-controls">
+      <div class="search-wrap">
+        <input type="text" id="search-input" placeholder="Rechercher une création…" oninput="filterProducts()">
+      </div>
+      <div id="filter-buttons" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
+  <div class="skeleton-line" style="width:70px;height:40px;border-radius:50px;"></div>
+  <div class="skeleton-line" style="width:90px;height:40px;border-radius:50px;"></div>
+  <div class="skeleton-line" style="width:110px;height:40px;border-radius:50px;"></div>
+</div>
+    </div>
+  </div>
+
+  <div class="products-grid" id="products-grid"></div>
+
+  <footer style="text-align:center;padding:40px;background:var(--navy);color:rgba(255,255,255,0.5);font-size:12px;letter-spacing:1px;">
+    <div style="font-family:'Dancing Script',cursive;font-size:22px;color:white;margin-bottom:12px;">Douce Grâce Créations</div>
+    <div style="margin-bottom:8px;">
+  📧 <a href="mailto:doucegrace.creations@gmail.com" style="color:inherit;text-decoration:none;">
+    doucegrace.creations@gmail.com
+  </a>
+  &nbsp;·&nbsp; 📞 07 50 48 38 18
+</div>
+<div style="margin-bottom:8px;">📍 07400 Saint-Martin-sur-Lavezon</div>
+    © 2025 Douce Grâce · Tous droits réservés
+  </footer>
+</div>
+<div class="page" id="page-fabrics">
+  <div class="shop-header">
+    <h1 class="shop-title">Les Tissus</h1>
+    <p class="shop-sub">Découvrez les matières disponibles</p>
+  </div>
+
+  <div class="products-grid" id="fabrics-grid"></div>
+
+  <footer style="text-align:center;padding:40px;background:var(--navy);color:rgba(255,255,255,0.5);font-size:12px;letter-spacing:1px;">
+    <div style="font-family:'Dancing Script',cursive;font-size:22px;color:white;margin-bottom:12px;">Douce Grâce Créations</div>
+    <div style="margin-bottom:8px;">
+  📧 <a href="mailto:doucegrace.creations@gmail.com" style="color:inherit;text-decoration:none;">
+    doucegrace.creations@gmail.com
+  </a>
+  &nbsp;·&nbsp; 📞 07 50 48 38 18
+</div>
+<div style="margin-bottom:8px;">📍 07400 Saint-Martin-sur-Lavezon</div>
+    © 2025 Douce Grâce · Tous droits réservés
+  </footer>
+</div>
+
+<!-- ══════════════════ CART PANEL ══════════════════ -->
+<div class="cart-overlay" id="cart-overlay" onclick="toggleCart()"></div>
+<div class="cart-panel" id="cart-panel">
+  <div class="cart-head">
+    <h2>Mon panier 🛒</h2>
+    <button class="cart-close" onclick="toggleCart()">✕</button>
+  </div>
+  <div class="cart-items" id="cart-items"></div>
+  <div class="cart-foot" id="cart-foot" style="display:none;">
+    <div class="cart-total">
+      <span class="cart-total-label">Total estimé (TTC hors frais de port)</span>
+      <span class="cart-total-amount" id="cart-total">0 €</span>
+    </div>
+    <p class="cart-note">💡 Ce panier est une demande de commande. Aucun paiement en ligne — Douce Grâce vous contactera pour confirmer et arranger le règlement.</p>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="openOrder()">Envoyer ma commande →</button>
+  </div>
+</div>
+
+
+<!-- ══════════════════ ORDER MODAL ══════════════════ -->
+<div class="modal-overlay" id="order-overlay">
+  <div class="modal" id="order-modal-content">
+    <button class="close-btn" onclick="closeOrder()">✕</button>
+    <div class="modal-logo">
+      <img src="dglog.png" alt="Douce Grâce" style="width:70px;height:auto;">
+    </div>
+    <h2>Finaliser ma commande</h2>
+    <p class="modal-sub">Je vous contacterai pour confirmer et arranger la livraison</p>
+
+    <div class="modal-order-summary" id="order-summary"></div>
+
+    <div class="form-group">
+      <label>Votre prénom & nom</label>
+      <input id="order-name" placeholder="Marie Dupont" />
+    </div>
+    <div class="form-group">
+      <label>Téléphone</label>
+      <input id="order-phone" placeholder="06 12 34 56 78" />
+    </div>
+    <div class="form-group">
+      <label>Email</label>
+      <input id="order-email" type="email" placeholder="marie@email.com" />
+    </div>
+    <div class="form-group">
+      <label>Précisions / mesures / remarques</label>
+      <textarea id="order-note" placeholder="Ex : taille 38, hauteur 165cm, livraison souhaitée avant le…"></textarea>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="send-order-btn" onclick="sendOrder()">Envoyer ✉️</button>
+      <button class="btn btn-outline" onclick="closeOrder()">Annuler</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════ DETAIL MODAL ══════════════════ -->
+<div class="modal-overlay" id="detail-overlay">
+  <div class="modal detail-modal" id="detail-content">
+    <button class="close-btn" onclick="closeDetail()">✕</button>
+  </div>
+</div>
+
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+// ══════════════════════════════════
+//  CONFIG — colle ton URL Apps Script ici après déploiement
+// ══════════════════════════════════
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzC2zM9G4rgXWK5YyFpIw4b6xQDciw_FbMvZ3Sq_oefyeXOGTHBIh-xzUW-f4bc4NLw/exec";
+
+// ══════════════════════════════════
+const FABRICS = [
+  { name:"Wax Indigo",   color:"#3a5f8a" },
+  { name:"Wax Ocre",     color:"#c8942a" },
+  { name:"Coton Rose",   color:"#e8a0b0" },
+  { name:"Lin Naturel",  color:"#c9b49a" },
+  { name:"Soie Ivoire",  color:"#f5efe6" },
+  { name:"Velours Nuit", color:"#2e3f6e" },
+  { name:"Coton Blanc",  color:"#f0f0f0" },
+  { name:"Satin Rouge",  color:"#c0392b" },
+  { name:"Tissu Vert",   color:"#2e7d52" },
+];
+
+let PRODUCTS = [];
+let FABRIC_CATALOG = [];
+let isLoadingProducts = true;
+async function loadProductsFromSheet() {
+  try {
+    const res = await fetch(GAS_URL + "?action=getProducts");
+    const data = await res.json();
+
+    PRODUCTS = data.apps || [];
+    isLoadingProducts = false;
+    // mettre à jour les catégories dynamiques
+    const filterWrap = document.getElementById('filter-buttons');
+    if (filterWrap && data.categories) {
+      filterWrap.innerHTML =
+        `<button class="filter-btn active" data-cat="" onclick="setFilter(this)">Tout</button>` +
+        data.categories.map(cat =>
+          `<button class="filter-btn" data-cat="${cat}" onclick="setFilter(this)">${cat}</button>`
+        ).join('');
+    }
+
+    renderProducts();
+  } catch (e) {
+    console.error("Erreur chargement produits", e);
+  }
+}
+async function loadFabricsFromSheet() {
+  try {
+    const res = await fetch(GAS_URL + "?action=getFabrics");
+    const data = await res.json();
+    FABRIC_CATALOG = data.fabrics || [];
+
+const brandPhoto = data.brandPhoto;
+const photoBox = document.getElementById("brand-photo-box");
+
+if (photoBox && brandPhoto) {
+  photoBox.innerHTML = `
+    <img src="${brandPhoto}"
+         alt="Douce Grâce"
+         style="
+           width: 220px;
+           height: 220px;
+           object-fit: cover;
+           border-radius: 22px;
+           box-shadow: 0 12px 30px rgba(30,45,74,0.12);
+           margin-bottom: 18px;
+         ">
+    <p>Chaque point compte</p>
+  `;
+}
+
+renderFabrics();
+  } catch (e) {
+    console.error("Erreur chargement tissus", e);
+  }
+}
+// ══════════════════════════════════
+//  STATE
+// ══════════════════════════════════
+let cart = [];
+let activeFilter = "";
+let selectedFabrics = {}; // {productId: fabricIndex}
+let appliedPromo = null;
+let promoMessage = "";
+// ══════════════════════════════════
+//  PAGE NAVIGATION
+// ══════════════════════════════════
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (name === 'shop') renderProducts();
+  if (name === 'fabrics') renderFabrics();
+  setTimeout(observeReveal, 50);
+}
+
+// Init on load
+document.addEventListener('DOMContentLoaded', function() {
+  observeReveal();
+
+  loadProductsFromSheet();
+  loadFabricsFromSheet();
+});
+
+function scrollToContact() {
+  showPage('home');
+  setTimeout(() => {
+    document.querySelector('footer').scrollIntoView({ behavior: 'smooth' });
+  }, 300);
+}
+
+// ══════════════════════════════════
+//  RENDER PRODUCTS
+// ══════════════════════════════════
+function renderProducts() {
+  const grid = document.getElementById('products-grid');
+if (isLoadingProducts) {
+  grid.innerHTML = Array(6).fill('').map(() => `
+    <div class="product-card" style="pointer-events:none;">
+      <div class="product-img skeleton-box"></div>
+      <div class="product-info">
+        <div class="skeleton-line" style="width:30%;height:10px;margin-bottom:10px;"></div>
+        <div class="skeleton-line" style="width:70%;height:24px;margin-bottom:10px;"></div>
+        <div class="skeleton-line" style="width:100%;height:12px;margin-bottom:8px;"></div>
+        <div class="skeleton-line" style="width:80%;height:12px;margin-bottom:18px;"></div>
+        <div class="skeleton-line" style="width:40%;height:28px;margin-bottom:18px;"></div>
+        <div class="skeleton-line" style="width:100%;height:42px;border-radius:50px;"></div>
+      </div>
+    </div>
+  `).join('');
+  return;
+}
+  const search = (document.getElementById('search-input')?.value || '').toLowerCase();
+  const filtered = PRODUCTS.filter(p =>
+    (!activeFilter || p.cat === activeFilter) &&
+    (!search || p.name.toLowerCase().includes(search) || p.desc.toLowerCase().includes(search))
+  );
+
+  if (!filtered.length) {
+    grid.innerHTML = '<div class="no-results">Aucune création trouvée… 🌸</div>';
+    return;
+  }
+
+  grid.innerHTML = filtered.map(p => {
+    const selFabric = selectedFabrics[p.id] !== undefined ? selectedFabrics[p.id] : null;
+   const swatches = p.custom && p.fabrics?.length ? `
+  <div class="fabric-section">
+    <div class="fabric-label">Tissu disponible</div>
+    <div style="font-size:14px;color:var(--text-light);line-height:1.8;">
+      🧵 ${p.fabrics.join(', ')}
+    </div>
+  </div>` : '';
+
+    return `
+      <div class="product-card" onclick="${p.outOfStock ? '' : `openDetail(${p.id})`}" style="${p.outOfStock ? 'opacity:0.5;filter:grayscale(1);' : ''}">
+        <div class="product-img">
+  ${p.image
+    ? `<img src="${p.image}" alt="${p.name}">`
+    : `<div class="product-img-placeholder">${p.emoji}</div>`}
+  ${p.custom ? '<span class="product-badge custom">Tissu au choix</span>' : ''}
+  ${p.outOfStock ? '<span class="product-badge custom" style="top:44px;">Rupture de stock</span>' : ''}
+</div>
+        <div class="product-info">
+          <div class="product-cat">${p.cat}</div>
+          <div class="product-name">${p.name}</div>
+          <div class="product-desc">${p.desc}</div>
+          ${swatches}
+          <div class="product-price">${p.price} €</div>
+          <div class="product-actions" onclick="event.stopPropagation()">
+  <button class="btn btn-primary" onclick="openDetail('${p.id}')">🛒 Ajouter au panier</button>
+</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  observeReveal();
+}
+function renderFabrics() {
+  const grid = document.getElementById('fabrics-grid');
+  if (!grid) return;
+
+  if (!FABRIC_CATALOG.length) {
+    grid.innerHTML = Array(6).fill('').map(() => `
+      <div class="product-card" style="pointer-events:none;">
+        <div class="product-img skeleton-box"></div>
+        <div class="product-info">
+          <div class="skeleton-line" style="width:70%;height:24px;margin-bottom:10px;"></div>
+          <div class="skeleton-line" style="width:100%;height:12px;margin-bottom:8px;"></div>
+          <div class="skeleton-line" style="width:80%;height:12px;"></div>
+        </div>
+      </div>
+    `).join('');
+    return;
+  }
+
+  grid.innerHTML = FABRIC_CATALOG.map(f => `
+    <div class="product-card" style="${!f.active ? 'opacity:0.5;filter:grayscale(1);' : ''}">
+      <div class="product-img">
+        ${
+          f.image
+            ? `<img src="${f.image}" alt="${f.name}">`
+            : `<div class="product-img-placeholder">🧵</div>`
+        }
+        ${!f.active ? '<span class="product-badge custom">Rupture de stock</span>' : ''}
+      </div>
+      <div class="product-info">
+        <div class="product-name">${f.name}</div>
+        <div class="product-desc">
+          ${f.desc}${f.cat ? ` <span style="font-style:italic;">(${f.cat})</span>` : ''}
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+function selectFabric(e, productId, fabricIdx) {
+  e.stopPropagation();
+  selectedFabrics[productId] = fabricIdx;
+  renderProducts();
+}
+
+function setFilter(btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  activeFilter = btn.dataset.cat;
+  filterProducts();
+}
+
+function filterProducts() {
+  renderProducts();
+}
+
+// ══════════════════════════════════
+//  CART
+// ══════════════════════════════════
+function applyPromoCode() {
+  const input = document.getElementById("promo-code");
+  if (!input) return;
+
+  const code = input.value.trim().toUpperCase();
+  const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+
+  const promoProduct = PRODUCTS.find(p =>
+    p.promoCode &&
+    p.promoCode.toUpperCase() === code
+  );
+
+  if (!promoProduct) {
+    appliedPromo = null;
+    promoMessage = "❌ Code promo invalide";
+    renderCartPanel();
+    return;
+  }
+
+  if (!promoProduct.promoActive) {
+    appliedPromo = null;
+    promoMessage = "❌ Code inactif";
+    renderCartPanel();
+    return;
+  }
+
+  const min = promoProduct.promoMin || 0;
+
+  if (subtotal < min) {
+    appliedPromo = null;
+    promoMessage = `❌ Valable à partir de ${min}€`;
+    renderCartPanel();
+    return;
+  }
+
+  appliedPromo = promoProduct.promoReduction;
+  promoMessage = `✅ -${promoProduct.promoReduction}% appliqué`;
+  renderCartPanel();
+}
+function addToCart(productId) {
+  const p = PRODUCTS.find(x => String(x.id) === String(productId));
+  const fabric = selectedFabrics[productId] || [];
+  const existing = cart.find(i => i.id === productId && i.fabricIdx === selectedFabrics[productId]);
+  if (existing) {
+    existing.qty++;
+  } else {
+    cart.push({ id: productId, name: p.name, price: p.price, emoji: p.emoji, qty: 1,
+      fabric: fabric.length ? fabric.join(', ') : null,
+fabricColor: null,
+      fabricIdx: selectedFabrics[productId] !== undefined ? selectedFabrics[productId] : null
+    });
+  }
+  updateCartUI();
+  // flash the cart button
+  const btn = document.querySelector('.cart-btn');
+  btn.style.transform = 'scale(1.3)';
+  setTimeout(() => btn.style.transform = '', 300);
+}
+
+function removeFromCart(idx) {
+  cart.splice(idx, 1);
+  updateCartUI();
+  renderCartPanel();
+}
+
+function changeQty(idx, delta) {
+  cart[idx].qty += delta;
+  if (cart[idx].qty <= 0) cart.splice(idx, 1);
+  updateCartUI();
+  renderCartPanel();
+}
+
+function updateCartUI() {
+  const total = cart.reduce((s, i) => s + i.qty, 0);
+  const countEl = document.getElementById('cart-count');
+  countEl.textContent = total;
+  countEl.classList.toggle('visible', total > 0);
+  renderCartPanel();
+}
+
+function renderCartPanel() {
+  const el = document.getElementById('cart-items');
+  const foot = document.getElementById('cart-foot');
+
+  if (!cart.length) {
+    el.innerHTML = `
+      <div class="cart-empty">
+        <div class="cart-empty-icon">🧺</div>
+        <p>Votre panier est vide</p>
+      </div>`;
+    foot.style.display = 'none';
+    return;
+  }
+
+  foot.style.display = 'block';
+  el.innerHTML = cart.map((item, idx) => `
+    <div class="cart-item">
+      <div class="cart-item-img">
+        ${item.fabricColor
+          ? `<div style="width:100%;height:100%;background:${item.fabricColor};border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px;">${item.emoji}</div>`
+          : item.emoji}
+      </div>
+      <div class="cart-item-info">
+        <div class="cart-item-name">${item.name}</div>
+        <div class="cart-item-detail">${item.fabric ? '🎨 ' + item.fabric : 'Tissu non sélectionné'}</div>
+        <div class="cart-item-qty">
+          <button class="qty-btn" onclick="changeQty(${idx}, -1)">−</button>
+          <span class="qty-val">${item.qty}</span>
+          <button class="qty-btn" onclick="changeQty(${idx}, 1)">+</button>
+          <button class="cart-item-remove" onclick="removeFromCart(${idx})">🗑</button>
+        </div>
+      </div>
+      <div class="cart-item-price">${item.price * item.qty} €</div>
+    </div>
+  `).join('');
+
+  let subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+let reduction = 0;
+
+if (appliedPromo) {
+  reduction = subtotal * (appliedPromo / 100);
+}
+
+const total = subtotal - reduction;
+
+document.getElementById('cart-total').textContent = total.toFixed(2) + ' €';
+
+const oldPromo = document.getElementById("promo-zone");
+if (oldPromo) oldPromo.remove();
+
+foot.insertAdjacentHTML("afterbegin", `
+  <div id="promo-zone" style="margin-bottom:16px;">
+    <input
+      id="promo-code"
+      type="text"
+      placeholder="Code promo"
+      style="width:100%;padding:12px 16px;border:1px solid var(--beige-mid);border-radius:12px;margin-bottom:8px;"
+    >
+    <button
+      class="btn btn-soft"
+      style="width:100%;justify-content:center;"
+      onclick="applyPromoCode()"
+    >
+      🎁 Appliquer le code
+    </button>
+    ${
+      promoMessage
+        ? `<div style="margin-top:8px;font-size:12px;color:${appliedPromo ? 'green' : '#c8806a'};">${promoMessage}</div>`
+        : ''
+    }
+  </div>
+`);
+}
+
+function toggleCart() {
+  document.getElementById('cart-panel').classList.toggle('active');
+  document.getElementById('cart-overlay').classList.toggle('active');
+  renderCartPanel();
+}
+
+// ══════════════════════════════════
+//  DETAIL MODAL
+// ══════════════════════════════════
+function openDetail(productId) {
+  const p = PRODUCTS.find(x => String(x.id) === String(productId));
+
+ const fabricSelect = p.custom && p.fabrics?.length ? `
+  <div class="fabric-section">
+    <div class="fabric-label">Choisir un ou plusieurs tissus</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-top:10px;">
+      ${p.fabrics.map(f => `
+        <label style="display:flex;align-items:center;gap:10px;font-size:14px;color:var(--text-light);">
+          <input type="checkbox" class="fabric-check-${p.id}" value="${f}">
+          ${f}
+        </label>
+      `).join('')}
+    </div>
+  </div>
+` : '';
+
+  const visual = p.image
+    ? `<img src="${p.image}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;">`
+    : p.emoji;
+
+  document.getElementById('detail-content').innerHTML = `
+    <button class="close-btn" onclick="closeDetail()">✕</button>
+    <div class="detail-img">${visual}</div>
+    <div class="detail-info">
+      <div class="product-cat">${p.cat}</div>
+      <div class="product-name">${p.name}</div>
+      <div class="product-desc">${p.desc}</div>
+      ${fabricSelect}
+      <div class="product-price">${p.price} €</div>
+      <div class="product-actions">
+        <button class="btn btn-primary" onclick="
+          selectedFabrics['${p.id}'] = Array.from(document.querySelectorAll('.fabric-check-${p.id}:checked')).map(el => el.value);
+          addToCart('${p.id}');
+          closeDetail();
+        ">🛒 Ajouter au panier</button>
+        <a href="tel:0750483818" class="btn btn-soft">📞 Appeler</a>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('detail-overlay').classList.add('active');
+}
+
+function selectFabricDetail(e, productId, fabricIdx) {
+  e.stopPropagation();
+  selectedFabrics[productId] = fabricIdx;
+  openDetail(productId);
+}
+
+function closeDetail() {
+  document.getElementById('detail-overlay').classList.remove('active');
+}
+
+// ══════════════════════════════════
+//  ORDER MODAL
+// ══════════════════════════════════
+function openOrder() {
+  // summary
+  let total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+
+if (appliedPromo) {
+  total -= total * (appliedPromo / 100);
+}
+  document.getElementById('order-summary').innerHTML = `
+    <h4>Récapitulatif</h4>
+    ${cart.map(i => `
+      <div class="modal-order-item">
+        <span>${i.emoji} ${i.name} ${i.fabric ? '('+i.fabric+')' : ''} ×${i.qty}</span>
+        <span>${i.price * i.qty} €</span>
+      </div>
+    `).join('')}
+    <div class="modal-order-total"><span>Total estimé (TTC hors frais de port)</span><span>${total} €</span></div>
+  `;
+  document.getElementById('order-overlay').classList.add('active');
+  toggleCart();
+}
+
+function closeOrder() {
+  document.getElementById('order-overlay').classList.remove('active');
+}
+
+async function sendOrder() {
+  const name  = document.getElementById('order-name').value.trim();
+  const phone = document.getElementById('order-phone').value.trim();
+  const email = document.getElementById('order-email').value.trim();
+  const note  = document.getElementById('order-note').value.trim();
+
+  if (!name || !phone) {
+    alert('Merci de renseigner votre nom et téléphone.');
+    return;
+  }
+const sendBtn = document.getElementById('send-order-btn');
+sendBtn.disabled = true;
+sendBtn.innerHTML = '⏳ Envoi en cours...';
+sendBtn.style.opacity = '0.7';
+sendBtn.style.pointerEvents = 'none';
+  const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  const itemsList = cart.map(i =>
+    `- ${i.emoji} ${i.name}${i.fabric ? ' (' + i.fabric + ')' : ''} ×${i.qty} = ${i.price * i.qty}€`
+  ).join('\n');
+
+  // ── 1. Enregistrement Google Sheets ──
+  if (GAS_URL) {
+    try {
+      await fetch(GAS_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'newOrder',
+          name, phone, email, note,
+          total,
+          items: cart.map(i => ({
+            name: i.name,
+            fabric: i.fabric || '',
+            qty: i.qty,
+            unitPrice: i.price,
+            subtotal: i.price * i.qty
+          }))
+        })
+      });
+    } catch(e) { console.warn('GAS log failed', e); }
+  }
+
+  // ── 3. Écran de confirmation ──
+  document.getElementById('order-modal-content').innerHTML = `
+    <div class="success-state">
+      <div class="success-icon">🌸</div>
+      <h3>Commande envoyée !</h3>
+      <p>Merci ${name} ! Votre commande a bien été enregistrée.<br><br>
+Douce Grâce vous recontactera au <strong>${phone}</strong> pour confirmer et organiser la livraison.</p>
+      <br>
+      <button class="btn btn-primary" onclick="resetAfterOrder()" style="margin:0 auto;">Continuer mes achats →</button>
+    </div>
+  `;
+}
+
+function resetAfterOrder() {
+  cart = [];
+  updateCartUI();
+  closeOrder();
+  document.getElementById('order-overlay').classList.remove('active');
+  // reset modal content for next time
+  location.reload();
+}
+
+// ══════════════════════════════════
+//  SCROLL REVEAL
+// ══════════════════════════════════
+function observeReveal() {
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal:not(.visible)').forEach(el => obs.observe(el));
+}
+
+// NAV scroll
+window.addEventListener('scroll', () => {
+  document.getElementById('main-nav').classList.toggle('scrolled', window.scrollY > 20);
+});
+
+// ══════════════════════════════════
+//  LEGAL TOGGLES
+// ══════════════════════════════════
+
+// ══════════════════════════════════
+//  LEGAL TOGGLES
+// ══════════════════════════════════
+document.addEventListener('click', function(e) {
+  const btn = e.target.closest('[data-target]');
+  if (!btn) return;
+
+  const target = document.getElementById(btn.dataset.target);
+  if (!target) return;
+
+  const isOpen = target.style.maxHeight && target.style.maxHeight !== "0px";
+
+  if (isOpen) {
+    target.style.maxHeight = "0";
+    target.style.opacity = "0";
+    target.style.marginTop = "0";
+  } else {
+    target.style.maxHeight = target.scrollHeight + "px";
+    target.style.opacity = "1";
+    target.style.marginTop = "20px";
+  }
+});
+</script>
+
+<script>
+// ══════════════════════════════════
+//  HERO CANVAS — ANIMATION COUTURE
+// ══════════════════════════════════
+(function() {
+  const canvas = document.getElementById('hero-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  function resize() {
+    canvas.width  = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // ── Fils de couture ondulants
+  const THREAD_COUNT = 8;
+  const threads = Array.from({length: THREAD_COUNT}, () => ({
+    drawn   : Math.random(),
+    speed   : 0.00035 + Math.random() * 0.0004,
+    p0x: Math.random() * 0.3,
+    p0y: 0.1 + Math.random() * 0.8,
+    p1x: 0.2 + Math.random() * 0.3,
+    p1y: Math.random(),
+    p2x: 0.5 + Math.random() * 0.3,
+    p2y: Math.random(),
+    p3x: 0.7 + Math.random() * 0.3,
+    p3y: 0.1 + Math.random() * 0.8,
+    opacity : 0.07 + Math.random() * 0.10,
+    width   : 0.8 + Math.random() * 1.0,
+    color   : Math.random() > 0.4 ? 'beige' : 'navy',
+    maxDraw : 0.55 + Math.random() * 0.45,
+    tailLen : 0.15 + Math.random() * 0.15,
+  }));
+
+  // ── Points de couture (tirets dispersés)
+  const dashes = [];
+  for (let r = 0; r < 6; r++) {
+    for (let c = 0; c < 20; c++) {
+      if (Math.random() < 0.5) {
+        dashes.push({
+          xFrac  : (c + 0.5 + (Math.random()-0.5)*0.6) / 20,
+          yFrac  : (r + 0.5 + (Math.random()-0.5)*0.8) / 6,
+          angle  : Math.PI * (0.1 + Math.random() * 0.8),
+          len    : 6 + Math.random() * 10,
+          opacity: 0.045 + Math.random() * 0.055,
+          navy   : Math.random() > 0.5,
+        });
+      }
+    }
+  }
+
+  // ── Aiguilles
+  function drawNeedle(x, y, angle, opacity, scale) {
+    ctx.save();
+    ctx.globalAlpha = opacity;
+    ctx.translate(x, y);
+    ctx.rotate(angle);
+    ctx.scale(scale, scale);
+    ctx.beginPath();
+    ctx.moveTo(0, -22);
+    ctx.lineTo(0, 14);
+    ctx.strokeStyle = 'rgba(30,45,74,1)';
+    ctx.lineWidth = 1.3;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.ellipse(0, -18, 1.5, 3.5, 0, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(30,45,74,1)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(-1, 11);
+    ctx.quadraticCurveTo(0, 20, 1, 11);
+    ctx.fillStyle = 'rgba(30,45,74,0.85)';
+    ctx.fill();
+    ctx.restore();
+  }
+
+  const NEEDLES = [
+    { xf:0.07, yf:0.15, angle: 0.30, op:0.11, s:1.1 },
+    { xf:0.90, yf:0.10, angle:-0.50, op:0.10, s:0.9 },
+    { xf:0.93, yf:0.75, angle: 0.65, op:0.09, s:1.0 },
+    { xf:0.12, yf:0.85, angle:-0.20, op:0.10, s:0.85},
+    { xf:0.50, yf:0.05, angle: 0.10, op:0.07, s:0.75},
+    { xf:0.50, yf:0.93, angle:-0.40, op:0.07, s:0.8 },
+  ];
+
+  // ── Bobines
+  function drawBobbin(x, y, r, op) {
+    for (let i = 0; i < 4; i++) {
+      const ri = r - i * 4;
+      if (ri <= 0) continue;
+      ctx.beginPath();
+      ctx.arc(x, y, ri, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(201,180,154,${op * (1 - i * 0.18)})`;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+    ctx.beginPath();
+    ctx.arc(x, y, 3, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(30,45,74,${op * 0.8})`;
+    ctx.fill();
+  }
+
+  const BOBBINS = [
+    {xf:0.04,yf:0.05,r:22,op:0.08},
+    {xf:0.96,yf:0.94,r:18,op:0.07},
+    {xf:0.97,yf:0.08,r:14,op:0.06},
+    {xf:0.03,yf:0.92,r:16,op:0.06},
+  ];
+
+  function bezier(t, p0, p1, p2, p3) {
+    const u = 1 - t;
+    return u*u*u*p0 + 3*u*u*t*p1 + 3*u*t*t*p2 + t*t*t*p3;
+  }
+
+  function drawThread(th, W, H) {
+    const start = Math.max(0, th.drawn - th.tailLen);
+    const end   = Math.min(th.drawn, 1);
+    const steps = 80;
+    ctx.beginPath();
+    let first = true;
+    for (let i = 0; i <= steps; i++) {
+      const t = start + (end - start) * (i / steps);
+      const x = bezier(t, th.p0x, th.p1x, th.p2x, th.p3x) * W;
+      const y = bezier(t, th.p0y, th.p1y, th.p2y, th.p3y) * H;
+      if (first) { ctx.moveTo(x, y); first = false; }
+      else ctx.lineTo(x, y);
+    }
+    const tailFrac = Math.min(1, th.drawn / th.tailLen);
+    const alpha = th.opacity * tailFrac;
+    ctx.strokeStyle = th.color === 'beige'
+      ? `rgba(201,180,154,${alpha})`
+      : `rgba(30,45,74,${alpha * 0.65})`;
+    ctx.lineWidth = th.width;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.stroke();
+  }
+
+  let last = 0;
+  function animate(ts) {
+    const dt = Math.min(ts - last, 50);
+    last = ts;
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+
+    // Dégradé de fond doux
+    const grad = ctx.createRadialGradient(W*0.5, 0, 0, W*0.5, H*0.5, W*0.75);
+    grad.addColorStop(0, 'rgba(201,180,154,0.18)');
+    grad.addColorStop(1, 'rgba(248,243,237,0)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, H);
+
+    // Points de couture
+    dashes.forEach(d => {
+      ctx.save();
+      ctx.globalAlpha = d.opacity;
+      ctx.translate(d.xFrac * W, d.yFrac * H);
+      ctx.rotate(d.angle);
+      ctx.beginPath();
+      ctx.moveTo(-d.len/2, 0);
+      ctx.lineTo(d.len/2, 0);
+      ctx.strokeStyle = d.navy ? 'rgba(30,45,74,1)' : 'rgba(201,180,154,1)';
+      ctx.lineWidth = 1.5;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+      ctx.restore();
+    });
+
+    // Bobines
+    BOBBINS.forEach(b => drawBobbin(b.xf*W, b.yf*H, b.r, b.op));
+
+    // Fils animés
+    threads.forEach(th => {
+      th.drawn += th.speed * dt;
+      if (th.drawn > th.maxDraw + th.tailLen) {
+        th.drawn = 0;
+        th.p0x = Math.random() * 0.3;
+        th.p0y = 0.1 + Math.random() * 0.8;
+        th.p1x = 0.2 + Math.random() * 0.3;
+        th.p1y = Math.random();
+        th.p2x = 0.5 + Math.random() * 0.3;
+        th.p2y = Math.random();
+        th.p3x = 0.7 + Math.random() * 0.3;
+        th.p3y = 0.1 + Math.random() * 0.8;
+        th.maxDraw = 0.55 + Math.random() * 0.45;
+        th.opacity = 0.07 + Math.random() * 0.10;
+        th.color = Math.random() > 0.4 ? 'beige' : 'navy';
+      }
+      drawThread(th, W, H);
+    });
+
+    // Aiguilles
+    NEEDLES.forEach(n => drawNeedle(n.xf*W, n.yf*H, n.angle, n.op, n.s));
+
+    requestAnimationFrame(animate);
+  }
+  requestAnimationFrame(animate);
+})();
+</script>
+</body>
+</html>
