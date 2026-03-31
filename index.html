@@ -1509,17 +1509,20 @@ const photoBox = document.getElementById("brand-photo-box");
 
 if (photoBox && brandPhoto) {
   photoBox.innerHTML = `
-    <img src="${brandPhoto}"
-         alt="Douce Grâce"
-         style="
-           width: 220px;
-           height: 220px;
-           object-fit: cover;
-           border-radius: 22px;
+   <img src="${brandPhoto}"
+     alt="Douce Grâce"
+     style="
+       width: 320px;
+       height: 220px;
+       object-fit: cover;
+       border-radius: 22px;
+       box-shadow: 0 12px 30px rgba(30,45,74,0.12);
+       margin-bottom: 18px;
+     ">
            box-shadow: 0 12px 30px rgba(30,45,74,0.12);
            margin-bottom: 18px;
          ">
-    <p>Chaque point compte</p>
+    <p>Gwendoline, créatrice</p>
   `;
 }
 
