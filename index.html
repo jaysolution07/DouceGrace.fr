@@ -1433,6 +1433,7 @@ nav.scrolled { box-shadow: 0 4px 24px rgba(30,45,74,0.08); }
       <label>Email</label>
       <input id="order-email" type="email" placeholder="marie@email.com" />
     </div>
+
     <div class="form-group">
       <label>Précisions / mesures / remarques</label>
       <textarea id="order-note" placeholder="Ex : taille 38, hauteur 165cm, livraison souhaitée avant le…"></textarea>
@@ -1468,7 +1469,15 @@ nav.scrolled { box-shadow: 0 4px 24px rgba(30,45,74,0.08); }
       <label>Email</label>
       <input id="special-email" type="email" placeholder="marie@email.com">
     </div>
+<div class="form-group">
+  <label>Date souhaitée</label>
+  <input id="special-date" type="date">
+</div>
 
+<div class="form-group">
+  <label>Budget estimatif (€)</label>
+  <input id="special-budget" placeholder="Ex : 50 à 80 €">
+</div>
     <div class="form-group">
       <label>Votre demande</label>
       <textarea id="special-message" placeholder="Expliquez votre besoin..."></textarea>
@@ -1977,6 +1986,7 @@ async function sendOrder() {
   const phone = document.getElementById('order-phone').value.trim();
   const email = document.getElementById('order-email').value.trim();
   const note  = document.getElementById('order-note').value.trim();
+  
 
   if (!name || !phone) {
     alert('Merci de renseigner votre nom et téléphone.');
@@ -2001,23 +2011,23 @@ if (GAS_URL) {
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        action: 'newOrder',
-        name,
-        phone,
-        email,
-        note,
-        total,
-        promoCode: document.getElementById('promo-code')?.value?.trim() || '',
-        promoReduction: appliedPromo || 0,
-        items: cart.map(i => ({
-          name: i.name,
-          fabric: i.fabric || '',
-          qty: i.qty,
-          unitPrice: i.price,
-          subtotal: i.price * i.qty
-        }))
-      })
+     body: JSON.stringify({
+  action: 'newOrder',
+  name,
+  phone,
+  email,
+  note,
+  total,
+  promoCode: document.getElementById('promo-code')?.value?.trim() || '',
+  promoReduction: appliedPromo || 0,
+  items: cart.map(i => ({
+    name: i.name,
+    fabric: i.fabric || '',
+    qty: i.qty,
+    unitPrice: i.price,
+    subtotal: i.price * i.qty
+  }))
+})
     });
   } catch (e) {
     console.warn('GAS log failed', e);
@@ -2305,6 +2315,8 @@ async function sendSpecialRequest() {
   const name = document.getElementById('special-name').value.trim();
   const email = document.getElementById('special-email').value.trim();
   const message = document.getElementById('special-message').value.trim();
+const requestedDate = document.getElementById('special-date')?.value || '';
+const budget = document.getElementById('special-budget')?.value.trim() || '';
   const file = document.getElementById('special-file').files[0];
 
   if (!name || !email || !message) {
