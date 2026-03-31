@@ -1904,27 +1904,36 @@ sendBtn.style.pointerEvents = 'none';
   ).join('\n');
 
   // ── 1. Enregistrement Google Sheets ──
-  if (GAS_URL) {
-    try {
-      await fetch(GAS_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'newOrder',
-          name, phone, email, note,
-          total,
-          items: cart.map(i => ({
-            name: i.name,
-            fabric: i.fabric || '',
-            qty: i.qty,
-            unitPrice: i.price,
-            subtotal: i.price * i.qty
-          }))
-        })
-      });
-    } catch(e) { console.warn('GAS log failed', e); }
+if (GAS_URL) {
+  try {
+    await fetch(GAS_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        action: 'newOrder',
+        name,
+        phone,
+        email,
+        note,
+        total,
+        promoCode: document.getElementById('promo-code')?.value?.trim() || '',
+        promoReduction: appliedPromo || 0,
+        items: cart.map(i => ({
+          name: i.name,
+          fabric: i.fabric || '',
+          qty: i.qty,
+          unitPrice: i.price,
+          subtotal: i.price * i.qty
+        }))
+      })
+    });
+  } catch (e) {
+    console.warn('GAS log failed', e);
   }
+}
 
   // ── 3. Écran de confirmation ──
   document.getElementById('order-modal-content').innerHTML = `
