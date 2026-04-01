@@ -1258,9 +1258,22 @@ nav.scrolled { box-shadow: 0 4px 24px rgba(30,45,74,0.08); }
     </div>
     <div class="about-visual reveal">
   <div class="about-visual-inner" id="brand-photo-box">
-    <span class="about-visual-icon">🧵</span>
+    <img
+      src="assets/FB_IMG_1774954852717.jpg"
+      alt="Gwendoline, créatrice"
+      style="
+        width: min(100%, 420px);
+        height: clamp(220px, 35vw, 280px);
+        object-fit: cover;
+        border-radius: 22px;
+        box-shadow: 0 12px 30px rgba(30,45,74,0.12);
+        display: block;
+        margin: 0 auto 18px;
+      "
+    >
     <p>Gwendoline, créatrice</p>
   </div>
+</div>
 </div>
 </div>
 
@@ -1550,26 +1563,6 @@ async function loadFabricsFromSheet() {
     const res = await fetch(GAS_URL + "?action=getFabrics");
     const data = await res.json();
     FABRIC_CATALOG = data.fabrics || [];
-
-const brandPhoto = data.brandPhoto;
-const photoBox = document.getElementById("brand-photo-box");
-
-if (photoBox && brandPhoto) {
-  photoBox.innerHTML = `
-  <img src="${brandPhoto}"
-    alt="Douce Grâce"
-    style="
-      width: min(100%, 420px);
-      height: clamp(220px, 35vw, 280px);
-      object-fit: cover;
-      border-radius: 22px;
-      box-shadow: 0 12px 30px rgba(30,45,74,0.12);
-      display: block;
-      margin: 0 auto 18px;
-    ">
-  <p>Gwendoline, créatrice</p>
-`;
-}
 
 renderFabrics();
   } catch (e) {
