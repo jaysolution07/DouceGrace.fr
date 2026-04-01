@@ -1454,7 +1454,7 @@ nav.scrolled { box-shadow: 0 4px 24px rgba(30,45,74,0.08); }
   </div>
 </div>
 <div class="modal-overlay" id="special-overlay">
-  <div class="modal">
+  <div class="modal" id="special-request-modal-content">
     <button class="close-btn" onclick="closeSpecialRequest()">✕</button>
 
     <h2>Demande spéciale ✂️</h2>
@@ -1469,6 +1469,10 @@ nav.scrolled { box-shadow: 0 4px 24px rgba(30,45,74,0.08); }
       <label>Email</label>
       <input id="special-email" type="email" placeholder="marie@email.com">
     </div>
+<div class="form-group">
+  <label>Téléphone</label>
+  <input id="special-phone" placeholder="06 12 34 56 78">
+</div>
 <div class="form-group">
   <label>Date souhaitée</label>
   <input id="special-date" type="date">
@@ -1489,7 +1493,9 @@ nav.scrolled { box-shadow: 0 4px 24px rgba(30,45,74,0.08); }
     </div>
 
     <div class="modal-actions">
-      <button class="btn btn-primary" onclick="sendSpecialRequest()">Envoyer ✉️</button>
+      <button id="send-special-btn" class="btn btn-primary" onclick="sendSpecialRequest()">
+  Envoyer ✉️
+</button>
       <button class="btn btn-outline" onclick="closeSpecialRequest()">Annuler</button>
     </div>
   </div>
@@ -1577,6 +1583,7 @@ let cart = [];
 let activeFilter = "";
 let selectedFabrics = {}; // {productId: fabricIndex}
 let appliedPromo = null;
+let appliedPromoCode = "";
 let promoMessage = "";
 // ══════════════════════════════════
 //  PAGE NAVIGATION
@@ -1772,8 +1779,9 @@ function applyPromoCode() {
   }
 
   appliedPromo = promoProduct.promoReduction;
-  promoMessage = `✅ -${promoProduct.promoReduction}% appliqué`;
-  renderCartPanel();
+appliedPromoCode = code;
+promoMessage = `✅ -${promoProduct.promoReduction}% appliqué`;
+renderCartPanel();
 }
 function addToCart(productId) {
   const p = PRODUCTS.find(x => String(x.id) === String(productId));
@@ -1997,7 +2005,9 @@ sendBtn.disabled = true;
 sendBtn.innerHTML = '⏳ Envoi en cours...';
 sendBtn.style.opacity = '0.7';
 sendBtn.style.pointerEvents = 'none';
-  const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+const reduction = appliedPromo ? subtotal * (appliedPromo / 100) : 0;
+const total = subtotal - reduction;
   const itemsList = cart.map(i =>
     `- ${i.emoji} ${i.name}${i.fabric ? ' (' + i.fabric + ')' : ''} ×${i.qty} = ${i.price * i.qty}€`
   ).join('\n');
@@ -2018,7 +2028,7 @@ if (GAS_URL) {
   email,
   note,
   total,
-  promoCode: document.getElementById('promo-code')?.value?.trim() || '',
+ promoCode: appliedPromoCode || '',
   promoReduction: appliedPromo || 0,
   items: cart.map(i => ({
     name: i.name,
@@ -2313,16 +2323,23 @@ function closeSpecialRequest() {
 
 async function sendSpecialRequest() {
   const name = document.getElementById('special-name').value.trim();
+  const phone = document.getElementById('special-phone').value.trim();
   const email = document.getElementById('special-email').value.trim();
   const message = document.getElementById('special-message').value.trim();
-const requestedDate = document.getElementById('special-date')?.value || '';
-const budget = document.getElementById('special-budget')?.value.trim() || '';
-  const file = document.getElementById('special-file').files[0];
+  const requestedDate = document.getElementById('special-date')?.value || '';
+  const budget = document.getElementById('special-budget')?.value.trim() || '';
+  const file = document.getElementById('special-file')?.files?.[0];
 
-  if (!name || !email || !message) {
+  if (!name || !phone || !email || !message) {
     alert("Merci de remplir tous les champs.");
     return;
   }
+
+  const sendBtn = document.getElementById('send-special-btn');
+  sendBtn.disabled = true;
+  sendBtn.innerHTML = '⏳ Envoi en cours...';
+  sendBtn.style.opacity = '0.7';
+  sendBtn.style.pointerEvents = 'none';
 
   let fileBase64 = "";
   let fileName = "";
@@ -2342,15 +2359,33 @@ const budget = document.getElementById('special-budget')?.value.trim() || '';
       body: JSON.stringify({
         action: "specialRequest",
         name,
+        phone,
         email,
         message,
+        requestedDate,
+        budget,
         fileName,
         fileBase64
       })
     });
 
-    alert("✨ Votre demande spéciale a bien été envoyée !");
-    closeSpecialRequest();
+    document.getElementById('special-request-modal-content').innerHTML = `
+      <div class="success-state">
+        <div class="success-icon">✂️</div>
+        <h3>Demande envoyée !</h3>
+        <p>
+          Merci <strong>${name}</strong> 💛<br><br>
+          Votre demande spéciale a bien été transmise à Douce Grâce.<br>
+          Elle reviendra vers vous au <strong>${phone}</strong> ou par email
+          pour échanger sur votre projet.
+        </p>
+        <br>
+        <button class="btn btn-primary" onclick="closeSpecialRequest()" style="margin:0 auto;">
+          Continuer → 
+        </button>
+      </div>
+    `;
+
   } catch (e) {
     alert("Erreur lors de l'envoi.");
     console.error(e);
