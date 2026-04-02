@@ -1159,6 +1159,27 @@ nav.scrolled { box-shadow: 0 4px 24px rgba(30,45,74,0.08); }
 /* hero bg handled by canvas */
   50% { opacity: 1; }
 }
+.toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: var(--navy);
+  color: white;
+  padding: 14px 18px;
+  border-radius: 14px;
+  box-shadow: 0 12px 30px rgba(30,45,74,0.18);
+  font-size: 13px;
+  z-index: 3000;
+  opacity: 0;
+  transform: translateY(15px);
+  pointer-events: none;
+  transition: all 0.35s ease;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
 </style>
 </head>
 <body>
@@ -1976,11 +1997,30 @@ if (appliedPromo) {
   document.getElementById('order-overlay').classList.add('active');
   toggleCart();
 }
-
+const sendBtn = document.getElementById('send-order-btn');
+if (sendBtn) {
+  sendBtn.disabled = false;
+  sendBtn.innerHTML = 'Envoyer ✉️';
+  sendBtn.style.opacity = '1';
+  sendBtn.style.pointerEvents = 'auto';
+}
 function closeOrder() {
   document.getElementById('order-overlay').classList.remove('active');
 }
+function showToast(message, isError = false) {
+  const toast = document.getElementById("toast");
+  toast.textContent = message;
 
+  toast.style.background = isError
+    ? "#c8806a"
+    : "var(--navy)";
+
+  toast.classList.add("show");
+
+  setTimeout(() => {
+    toast.classList.remove("show");
+  }, 3500);
+}
 async function sendOrder() {
   const name  = document.getElementById('order-name').value.trim();
   const phone = document.getElementById('order-phone').value.trim();
@@ -1993,8 +2033,9 @@ async function sendOrder() {
     return;
   }
 const sendBtn = document.getElementById('send-order-btn');
+if (sendBtn.disabled) return;
 sendBtn.disabled = true;
-sendBtn.innerHTML = '⏳ Envoi en cours...';
+sendBtn.innerHTML = '💌 Envoi...';
 sendBtn.style.opacity = '0.7';
 sendBtn.style.pointerEvents = 'none';
   const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
@@ -2006,36 +2047,34 @@ const total = subtotal - reduction;
 
   // ── 1. Enregistrement Google Sheets ──
 if (GAS_URL) {
-  try {
-    await fetch(GAS_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-     body: JSON.stringify({
-  action: 'newOrder',
-  name,
-  phone,
-  email,
-  note,
-  total,
- promoCode: appliedPromoCode || '',
-  promoReduction: appliedPromo || 0,
-  items: cart.map(i => ({
-    name: i.name,
-    fabric: i.fabric || '',
-    qty: i.qty,
-    unitPrice: i.price,
-    subtotal: i.price * i.qty
-  }))
-})
-    });
-  } catch (e) {
+  fetch(GAS_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      action: 'newOrder',
+      name,
+      phone,
+      email,
+      note,
+      total,
+      promoCode: appliedPromoCode || '',
+      promoReduction: appliedPromo || 0,
+      items: cart.map(i => ({
+        name: i.name,
+        fabric: i.fabric || '',
+        qty: i.qty,
+        unitPrice: i.price,
+        subtotal: i.price * i.qty
+      }))
+    })
+  }).catch((e) => {
     console.warn('GAS log failed', e);
-  }
+    showToast("⚠️ Petit souci lors de l'envoi", true);
+  });
 }
-
   // ── 3. Écran de confirmation ──
   document.getElementById('order-modal-content').innerHTML = `
     <div class="success-state">
@@ -2307,6 +2346,13 @@ document.addEventListener('click', function(e) {
 })();
 function openSpecialRequest() {
   document.getElementById('special-overlay').classList.add('active');
+const sendBtn = document.getElementById('send-special-btn');
+if (sendBtn) {
+  sendBtn.disabled = false;
+  sendBtn.innerHTML = 'Envoyer ✉️';
+  sendBtn.style.opacity = '1';
+  sendBtn.style.pointerEvents = 'auto';
+}
 }
 
 function closeSpecialRequest() {
@@ -2328,8 +2374,10 @@ async function sendSpecialRequest() {
   }
 
   const sendBtn = document.getElementById('send-special-btn');
+  if (sendBtn.disabled) return;
+
   sendBtn.disabled = true;
-  sendBtn.innerHTML = '⏳ Envoi en cours...';
+  sendBtn.innerHTML = '💌 Envoi...';
   sendBtn.style.opacity = '0.7';
   sendBtn.style.pointerEvents = 'none';
 
@@ -2341,48 +2389,46 @@ async function sendSpecialRequest() {
     fileBase64 = await toBase64(file);
   }
 
-  try {
-    await fetch(GAS_URL, {
-      method: "POST",
-      mode: "no-cors",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        action: "specialRequest",
-        name,
-        phone,
-        email,
-        message,
-        requestedDate,
-        budget,
-        fileName,
-        fileBase64
-      })
-    });
-
-    document.getElementById('special-request-modal-content').innerHTML = `
-      <div class="success-state">
-        <div class="success-icon">✂️</div>
-        <h3>Demande envoyée !</h3>
-        <p>
-          Merci <strong>${name}</strong> 💛<br><br>
-          Votre demande spéciale a bien été transmise à Douce Grâce.<br>
-          Elle reviendra vers vous au <strong>${phone}</strong> ou par email
-          pour échanger sur votre projet.
-        </p>
-        <br>
-        <button class="btn btn-primary" onclick="closeSpecialRequest()" style="margin:0 auto;">
-          Continuer → 
-        </button>
-      </div>
-    `;
-
-  } catch (e) {
-    alert("Erreur lors de l'envoi.");
+  fetch(GAS_URL, {
+    method: "POST",
+    mode: "no-cors",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      action: "specialRequest",
+      name,
+      phone,
+      email,
+      message,
+      requestedDate,
+      budget,
+      fileName,
+      fileBase64
+    })
+  }).catch((e) => {
     console.error(e);
-  }
+    showToast("⚠️ Petit souci lors de l'envoi", true);
+  });
+
+  document.getElementById('special-request-modal-content').innerHTML = `
+    <div class="success-state">
+      <div class="success-icon">✂️</div>
+      <h3>Demande envoyée !</h3>
+      <p>
+        Merci <strong>${name}</strong> 💛<br><br>
+        Votre demande spéciale a bien été transmise à Douce Grâce.<br>
+        Elle reviendra vers vous au <strong>${phone}</strong> ou par email
+        pour échanger sur votre projet.
+      </p>
+      <br>
+      <button class="btn btn-primary" onclick="closeSpecialRequest()" style="margin:0 auto;">
+        Continuer →
+      </button>
+    </div>
+  `;
 }
+
 
 function toBase64(file) {
   return new Promise((resolve, reject) => {
@@ -2393,5 +2439,6 @@ function toBase64(file) {
   });
 }
 </script>
+<div id="toast" class="toast"></div>
 </body>
 </html>
