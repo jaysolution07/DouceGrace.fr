@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+<defs><linearGradient id="navy" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2e4268"/><stop offset="1" stop-color="#1e2d4a"/></linearGradient></defs>
+<rect x="96" y="96" width="832" height="832" rx="216" fill="url(#navy)"/>
+<rect x="96" y="96" width="832" height="832" rx="216" fill="none" stroke="#c9b49a" stroke-width="26"/>
+<g fill="#f0e8dc" stroke="#f0e8dc" stroke-linecap="round">
+<ellipse cx="400" cy="573" rx="200" ry="168"/>
+<path d="M 540 500 Q 655 385 705 313" fill="none" stroke-width="108"/>
+<circle cx="712" cy="302" r="66"/>
+</g>
+<polygon points="300,540 125,560 295,675" fill="#0f1a31"/>
+<polygon points="770,320 762,258 924,285" fill="#d9a05b"/>
+<g stroke="#d9a05b" stroke-width="28" stroke-linecap="round" fill="none">
+<path d="M 412 720 L 376 838"/>
+<path d="M 492 720 L 532 838"/>
+</g>
+</svg>
