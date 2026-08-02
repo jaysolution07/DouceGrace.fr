@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Douce Grâce Créations</title>
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="favicon-192.png">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#1e2d4a">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Dancing+Script:wght@600;700&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -792,6 +798,14 @@ nav.scrolled { box-shadow: 0 4px 24px rgba(30,45,74,0.08); }
   font-size: 60px;
 }
 .detail-img img { width: 100%; height: 100%; object-fit: cover; }
+.product-badge.photos{left:auto;right:12px;background:#2e4268}
+.detail-gallery{width:100%;display:flex;flex-direction:column;gap:12px}
+.detail-gallery-main{width:100%;height:240px;border-radius:12px;overflow:hidden;background:var(--beige);display:flex;align-items:center;justify-content:center}
+.detail-gallery-main img{width:100%;height:100%;object-fit:cover}
+.detail-thumbs{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:4px}
+.detail-thumbs img{width:52px;height:52px;object-fit:cover;border-radius:10px;cursor:pointer;border:2px solid transparent;opacity:.7;transition:border-color .2s,opacity .2s}
+.detail-thumbs img.active{border-color:#d9a05b;opacity:1}
+.detail-thumbs img:hover{opacity:1}
 .detail-info { flex: 1; padding-top: 4px; }
 .detail-info .product-cat { margin-bottom: 8px; }
 .detail-info .product-name { font-size: 26px; margin-bottom: 10px; }
@@ -857,7 +871,7 @@ nav.scrolled { box-shadow: 0 4px 24px rgba(30,45,74,0.08); }
   align-items: center;
   gap: 10px;
 }
-.feature-icon { font-size: 28px; }
+.feature-icon { width: 56px; height: 56px; object-fit: contain; display: block; margin: 0 auto; }
 .feature-text {
   font-size: 12px;
   font-weight: 500;
@@ -1138,9 +1152,16 @@ nav.scrolled { box-shadow: 0 4px 24px rgba(30,45,74,0.08); }
 }
 
 #fabrics-grid .product-img {
-  height: 140px;
+  aspect-ratio: 1 / 1;
+  height: auto;
 }
-
+#fabrics-grid .product-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  image-rendering: auto;
+  transform: translateZ(0);
+}
 #fabrics-grid .product-name {
   font-size: 16px;
 }
@@ -1248,19 +1269,19 @@ nav.scrolled { box-shadow: 0 4px 24px rgba(30,45,74,0.08); }
   <!-- FEATURES -->
   <div class="features-strip reveal">
     <div class="feature-item">
-      <span class="feature-icon">🧵</span>
+      <img class="feature-icon" src="FM.png" alt="Fait main" loading="lazy">
       <span class="feature-text">Fait main</span>
     </div>
     <div class="feature-item">
-      <span class="feature-icon">🎨</span>
+      <img class="feature-icon" src="TAC.png" alt="Tissus au choix" loading="lazy">
       <span class="feature-text">Tissus au choix</span>
     </div>
     <div class="feature-item">
-      <span class="feature-icon">📐</span>
+      <img class="feature-icon" src="SM.png" alt="Sur mesure" loading="lazy">
       <span class="feature-text">Sur mesure</span>
     </div>
     <div class="feature-item">
-      <span class="feature-icon">💌</span>
+      <img class="feature-icon" src="CS.png" alt="Commande simple" loading="lazy">
       <span class="feature-text">Commande simple</span>
     </div>
   </div>
@@ -1540,6 +1561,25 @@ nav.scrolled { box-shadow: 0 4px 24px rgba(30,45,74,0.08); }
 // ══════════════════════════════════
 const GAS_URL = "https://script.google.com/macros/s/AKfycbzC2zM9G4rgXWK5YyFpIw4b6xQDciw_FbMvZ3Sq_oefyeXOGTHBIh-xzUW-f4bc4NLw/exec";
 
+// Convertit toute URL Google Drive en URL d'image directe (lh3 = sans redirection)
+function imgSrc(url) {
+  url = String(url || '').trim();
+  if (!url) return '';
+  let m = url.match(new RegExp('/file/d/([a-zA-Z0-9_-]+)'));
+  if (m) return 'https://lh3.googleusercontent.com/d/' + m[1];
+  m = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (m) return 'https://lh3.googleusercontent.com/d/' + m[1];
+  return url;
+}
+// Secours : si l'image ne charge pas, on affiche l'emoji à la place
+function imgFail(img, emoji) {
+  img.onerror = null;
+  const ph = document.createElement('div');
+  ph.className = 'product-img-placeholder';
+  ph.textContent = emoji || img.dataset.emoji || '🧵';
+  img.replaceWith(ph);
+}
+
 // ══════════════════════════════════
 const FABRICS = [
   { name:"Wax Indigo",   color:"#3a5f8a" },
@@ -1628,6 +1668,14 @@ function scrollToContact() {
 // ══════════════════════════════════
 //  RENDER PRODUCTS
 // ══════════════════════════════════
+function stockLabel(p) {
+  if (p.stock === null || p.stock === undefined) return '';
+  if (p.stock <= 0) return '';
+  if (p.stock <= 3) {
+    return '<div style="margin:0 0 12px;font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#c0392b;">⚠️ Ne reste plus que ' + p.stock + ' en stock</div>';
+  }
+  return '<div style="margin:0 0 12px;font-size:11px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:#2e7d52;">✓ ' + p.stock + ' en stock</div>';
+}
 function renderProducts() {
   const grid = document.getElementById('products-grid');
 if (isLoadingProducts) {
@@ -1671,8 +1719,9 @@ if (isLoadingProducts) {
       <div class="product-card" onclick="${p.outOfStock ? '' : `openDetail(${p.id})`}" style="${p.outOfStock ? 'opacity:0.5;filter:grayscale(1);' : ''}">
         <div class="product-img">
   ${p.image
-    ? `<img src="${p.image}" alt="${p.name}">`
+    ? `<img src="${imgSrc(p.image)}" alt="${p.name}" data-emoji="${p.emoji || '🧵'}" onerror="imgFail(this)">`
     : `<div class="product-img-placeholder">${p.emoji}</div>`}
+  ${(p.images && p.images.length > 1) ? '<span class="product-badge photos">📷 ' + p.images.length + '</span>' : ''}
   ${p.custom ? '<span class="product-badge custom">Tissu au choix</span>' : ''}
   ${p.outOfStock ? '<span class="product-badge custom" style="top:44px;">Rupture de stock</span>' : ''}
 </div>
@@ -1682,6 +1731,7 @@ if (isLoadingProducts) {
           <div class="product-desc">${p.desc}</div>
           ${swatches}
           <div class="product-price">${p.price} €</div>
+          ${stockLabel(p)}
           <div class="product-actions" onclick="event.stopPropagation()">
   <button 
     class="btn btn-primary"
@@ -1722,7 +1772,7 @@ function renderFabrics() {
       <div class="product-img">
         ${
           f.image
-            ? `<img src="${f.image}" alt="${f.name}">`
+            ? `<img src="${imgSrc(f.image)}" alt="${f.name}" onerror="imgFail(this,'🧵')">`
             : `<div class="product-img-placeholder">🧵</div>`
         }
         ${!f.active ? '<span class="product-badge custom">Rupture de stock</span>' : ''}
@@ -1798,6 +1848,14 @@ renderCartPanel();
 }
 function addToCart(productId) {
   const p = PRODUCTS.find(x => String(x.id) === String(productId));
+  if (p && p.stock !== null && p.stock !== undefined && p.stock <= 0) {
+    showToast('❌ Ce produit est en rupture de stock', true);
+    return;
+  }
+  if (p && p.stock !== null && p.stock !== undefined) {
+    const inCart = cart.filter(i => String(i.id) === String(productId)).reduce((s, i) => s + i.qty, 0);
+    if (inCart >= p.stock) { showToast('⚠️ Stock limité : plus que ' + p.stock + ' disponible(s)', true); return; }
+  }
   const fabric = selectedFabrics[productId] || [];
   const existing = cart.find(i => i.id === productId && i.fabricIdx === selectedFabrics[productId]);
   if (existing) {
@@ -1823,6 +1881,14 @@ function removeFromCart(idx) {
 }
 
 function changeQty(idx, delta) {
+  const item = cart[idx];
+  if (delta > 0) {
+    const p = PRODUCTS.find(x => String(x.id) === String(item.id));
+    if (p && p.stock !== null && p.stock !== undefined) {
+      const inCart = cart.filter(i => String(i.id) === String(item.id)).reduce((s, i) => s + i.qty, 0);
+      if (inCart >= p.stock) { showToast('⚠️ Stock limité : plus que ' + p.stock + ' disponible(s)', true); return; }
+    }
+  }
   cart[idx].qty += delta;
   if (cart[idx].qty <= 0) cart.splice(idx, 1);
   updateCartUI();
@@ -1937,9 +2003,17 @@ if (p.outOfStock) return;
   </div>
 ` : '';
 
-  const visual = p.image
-    ? `<img src="${p.image}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;">`
-    : p.emoji;
+  const photos = (p.images && p.images.length) ? p.images : (p.image ? [p.image] : []);
+  const visual = photos.length ? `
+    <div class="detail-gallery">
+      <div class="detail-gallery-main">
+        <img id="detail-main-img" src="${imgSrc(photos[0])}" alt="${p.name}" onerror="imgFail(this,'🖼️')">
+      </div>
+      ${photos.length > 1 ? `
+      <div class="detail-thumbs">
+        ${photos.map((ph, i) => `<img src="${imgSrc(ph)}" class="${i === 0 ? 'active' : ''}" onclick="setDetailImg(${i})" onerror="this.style.display='none'">`).join('')}
+      </div>` : ''}
+    </div>` : p.emoji;
 
   document.getElementById('detail-content').innerHTML = `
     <button class="close-btn" onclick="closeDetail()">✕</button>
@@ -1950,6 +2024,7 @@ if (p.outOfStock) return;
       <div class="product-desc">${p.desc}</div>
       ${fabricSelect}
       <div class="product-price">${p.price} €</div>
+      ${stockLabel(p)}
       <div class="product-actions">
         <button class="btn btn-primary" onclick="
           selectedFabrics['${p.id}'] = Array.from(document.querySelectorAll('.fabric-check-${p.id}:checked')).map(el => el.value);
@@ -1970,7 +2045,17 @@ function selectFabricDetail(e, productId, fabricIdx) {
   openDetail(productId);
 }
 
+// Bascule l'image principale de la galerie détail
+function setDetailImg(i) {
+  const main = document.getElementById('detail-main-img');
+  const thumbs = document.querySelectorAll('.detail-thumbs img');
+  if (!main || !thumbs[i] || thumbs[i].style.display === 'none') return;
+  main.src = thumbs[i].src;
+  thumbs.forEach((t, j) => t.classList.toggle('active', j === i));
+}
 function closeDetail() {
+
+
   document.getElementById('detail-overlay').classList.remove('active');
 }
 
@@ -2063,6 +2148,7 @@ if (GAS_URL) {
       promoCode: appliedPromoCode || '',
       promoReduction: appliedPromo || 0,
       items: cart.map(i => ({
+        id: i.id,
         name: i.name,
         fabric: i.fabric || '',
         qty: i.qty,
