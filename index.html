@@ -71,8 +71,10 @@ nav {
   top: 0; left: 0; right: 0;
   z-index: 500;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
+  row-gap: 8px;
   padding: 16px 40px;
   background: rgba(248, 243, 237, 0.92);
   backdrop-filter: blur(12px);
@@ -1199,6 +1201,28 @@ nav.scrolled { box-shadow: 0 4px 24px rgba(30,45,74,0.08); }
 /* hero bg handled by canvas */
   50% { opacity: 1; }
 }
+/* ── INFO LIVRAISON (sous le bandeau Douce Grâce, toujours visible) ── */
+.ship-info {
+  flex-basis: 100%;
+  text-align: center;
+  font-size: 11.5px;
+  letter-spacing: 0.4px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  color: var(--navy-mid);
+  background: var(--beige);
+  border: 1px solid var(--beige-dark);
+  display: none;
+}
+.ship-info.show { display: block; }
+.ship-info.free { background: #e6f2ec; border-color: #bfdcc9; color: #2e6b4f; font-weight: 600; }
+body.ship-info-on .hero { padding-top: 155px; }
+body.ship-info-on .shop-header { padding-top: 135px; }
+@media (max-width: 768px) {
+  body.ship-info-on .hero { padding-top: 140px; }
+  body.ship-info-on .shop-header { padding-top: 120px; }
+}
+
 .toast {
   position: fixed;
   bottom: 20px;
@@ -1275,6 +1299,7 @@ nav.scrolled { box-shadow: 0 4px 24px rgba(30,45,74,0.08); }
       <span class="cart-count" id="cart-count">0</span>
     </button>
   </div>
+  <div class="ship-info" id="ship-info"></div>
 </nav>
 
 <!-- ══════════════════ HOME PAGE ══════════════════ -->
@@ -1528,7 +1553,7 @@ J'ai hâte de partager mes créations avec vous ! 🌸</p>
       <img src="dglog.jpg" alt="Douce Grâce" style="width:70px;height:auto;">
     </div>
     <h2>Finaliser ma commande</h2>
-    <p class="modal-sub">Je vous contacterai pour confirmer et arranger la livraison</p>
+    <p class="modal-sub">Paiement sécurisé par carte · Livraison en France métropolitaine</p>
 
     <div class="modal-order-summary" id="order-summary"></div>
 
@@ -1546,14 +1571,32 @@ J'ai hâte de partager mes créations avec vous ! 🌸</p>
     </div>
 
     <div class="form-group">
+      <label>Adresse de livraison</label>
+      <input id="order-address" placeholder="12 rue des Lilas" />
+    </div>
+    <div class="form-row" style="display:flex;gap:12px;">
+      <div class="form-group" style="flex:1;">
+        <label>Code postal</label>
+        <input id="order-zip" placeholder="07000" />
+      </div>
+      <div class="form-group" style="flex:2;">
+        <label>Ville</label>
+        <input id="order-city" placeholder="Gras" />
+      </div>
+    </div>
+
+    <div class="form-group">
       <label>Précisions / mesures / remarques</label>
       <textarea id="order-note" placeholder="Ex : taille 38, hauteur 165cm, livraison souhaitée avant le…"></textarea>
     </div>
 
     <div class="modal-actions">
-      <button class="btn btn-primary" id="send-order-btn" onclick="sendOrder()">Envoyer ✉️</button>
+      <button class="btn btn-primary" id="send-order-btn" onclick="payWithStripe()">💳 Payer par carte</button>
       <button class="btn btn-outline" onclick="closeOrder()">Annuler</button>
     </div>
+    <p style="text-align:center;font-size:11px;color:var(--text-light);margin-top:14px;">
+      Paiement 100% sécurisé par Stripe · <a href="javascript:void(0)" onclick="sendOrder()" style="color:var(--text-light);text-decoration:underline;">Je préfère commander sans paiement en ligne</a>
+    </p>
   </div>
 </div>
 
@@ -1695,6 +1738,42 @@ let selectedFabrics = {}; // {productId: fabricIndex}
 let appliedPromo = null;
 let appliedPromoCode = "";
 let promoMessage = "";
+// ── CONFIG LIVRAISON (lue depuis le backend, modifiable dans le portail admin) ──
+let SHIP_CONFIG = { shippingFee: 5.99, freeShippingMin: 60 };
+function computeShipping(subtotalAfterPromo) {
+  return subtotalAfterPromo >= SHIP_CONFIG.freeShippingMin ? 0 : SHIP_CONFIG.shippingFee;
+}
+function cartSubtotal() {
+  return cart.reduce((s, i) => s + i.price * i.qty, 0);
+}
+function cartAfterPromo() {
+  const sub = cartSubtotal();
+  return sub - (appliedPromo ? sub * (appliedPromo / 100) : 0);
+}
+function updateShipBanner() {
+  const info = document.getElementById('ship-info');
+  if (!info) return;
+  const after = cartAfterPromo();
+  if (after >= SHIP_CONFIG.freeShippingMin) {
+    info.classList.add('free');
+    info.innerHTML = '🎉 Livraison offerte sur votre commande !';
+  } else {
+    info.classList.remove('free');
+    const rest = (SHIP_CONFIG.freeShippingMin - after).toFixed(2).replace('.', ',');
+    info.innerHTML = "🚚 Livraison offerte dès " + String(SHIP_CONFIG.freeShippingMin).replace('.', ',') + " € d'achat" + (cart.length ? " — plus que " + rest + " €" : "") + " · France métropolitaine";
+  }
+}
+async function loadShipConfig() {
+  try {
+    const res = await fetch(GAS_URL + '?action=getConfig');
+    const data = await res.json();
+    if (data && data.shippingFee != null) SHIP_CONFIG = data;
+  } catch (e) { console.warn('Config livraison indisponible', e); }
+  const info = document.getElementById('ship-info');
+  if (info) info.classList.add('show');
+  document.body.classList.add('ship-info-on');
+  updateShipBanner();
+}
 // ══════════════════════════════════
 //  PAGE NAVIGATION
 // ══════════════════════════════════
@@ -1713,7 +1792,59 @@ document.addEventListener('DOMContentLoaded', function() {
 
   loadProductsFromSheet();
   loadFabricsFromSheet();
+  loadShipConfig();
+  handleStripeReturn();
 });
+
+// ── RETOUR STRIPE (succès / annulation) ──
+async function handleStripeReturn() {
+  const params = new URLSearchParams(window.location.search);
+  const payment = params.get('payment');
+  const sessionId = params.get('session_id');
+
+  // Nettoyer l'URL (retire ?payment=... sans recharger)
+  if (payment || sessionId) {
+    const clean = window.location.origin + window.location.pathname;
+    window.history.replaceState({}, document.title, clean);
+  }
+
+  if (payment === 'cancel') {
+    showToast('Paiement annulé — commande non enregistrée. Vous pouvez réessayer.', true);
+    return;
+  }
+  if (payment === 'success' && sessionId) {
+    try {
+      const res = await fetch(GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'confirmOrder', session_id: sessionId })
+      });
+      const data = await res.json();
+      if (data && data.success) {
+        cart = [];
+        updateCartUI();
+        const overlay = document.getElementById('order-overlay');
+        document.getElementById('order-modal-content').innerHTML = `
+          <div class="success-state">
+            <div class="success-icon">✅</div>
+            <h3>Paiement confirmé !</h3>
+            <p>Merci ! Votre commande <strong>${data.orderId || ''}</strong> a bien été réglée et enregistrée.<br><br>
+Douce Grâce prépare votre commande et vous enverra un email de suivi pour la livraison.</p>
+            <br>
+            <button class="btn btn-primary" onclick="resetAfterOrder()" style="margin:0 auto;">Continuer mes achats →</button>
+          </div>
+        `;
+        overlay.classList.add('active');
+      } else {
+        showToast('Paiement en attente de confirmation. Vérifiez votre email.', true);
+      }
+    } catch (e) {
+      console.error('Erreur confirmation paiement', e);
+      showToast('La confirmation du paiement a échoué. Contactez Douce Grâce.', true);
+    }
+  }
+}
+
 
 function scrollToContact() {
   showPage('home');
@@ -1971,6 +2102,7 @@ function renderCartPanel() {
         <p>Votre panier est vide</p>
       </div>`;
     foot.style.display = 'none';
+    updateShipBanner();
     return;
   }
 
@@ -2003,9 +2135,20 @@ if (appliedPromo) {
   reduction = subtotal * (appliedPromo / 100);
 }
 
-const total = subtotal - reduction;
+const afterPromo = subtotal - reduction;
+const shipping = computeShipping(afterPromo);
+const total = afterPromo + shipping;
+
+const oldShip = document.getElementById('cart-ship-line');
+if (oldShip) oldShip.remove();
+const shipLine = document.createElement('div');
+shipLine.id = 'cart-ship-line';
+shipLine.style.cssText = 'display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:12px;color:var(--text-light);';
+shipLine.innerHTML = '<span>Livraison (France)</span><span>' + (shipping === 0 ? '<b style="color:#2e6b4f;">Offerte 🎉</b>' : shipping.toFixed(2) + ' €') + '</span>';
+foot.querySelector('#promo-zone') ? foot.insertBefore(shipLine, foot.querySelector('#promo-zone')) : foot.insertBefore(shipLine, foot.firstChild);
 
 document.getElementById('cart-total').textContent = total.toFixed(2) + ' €';
+updateShipBanner();
 
 const oldPromo = document.getElementById("promo-zone");
 if (oldPromo) oldPromo.remove();
@@ -2121,11 +2264,10 @@ function closeDetail() {
 // ══════════════════════════════════
 function openOrder() {
   // summary
-  let total = cart.reduce((s, i) => s + i.price * i.qty, 0);
-
-if (appliedPromo) {
-  total -= total * (appliedPromo / 100);
-}
+  const sub = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  const after = sub - (appliedPromo ? sub * (appliedPromo / 100) : 0);
+  const shipping = computeShipping(after);
+  const total = after + shipping;
   document.getElementById('order-summary').innerHTML = `
     <h4>Récapitulatif</h4>
     ${cart.map(i => `
@@ -2134,15 +2276,18 @@ if (appliedPromo) {
         <span>${i.price * i.qty} €</span>
       </div>
     `).join('')}
-    <div class="modal-order-total"><span>Total estimé (TTC hors frais de port)</span><span>${total} €</span></div>
+    ${appliedPromo ? `<div class="modal-order-item"><span>Promo ${appliedPromoCode} (−${appliedPromo}%)</span><span>−${(sub * appliedPromo / 100).toFixed(2)} €</span></div>` : ''}
+    <div class="modal-order-item"><span>Livraison (France)</span><span>${shipping === 0 ? 'Offerte 🎉' : shipping.toFixed(2) + ' €'}</span></div>
+    <div class="modal-order-total"><span>Total TTC</span><span>${total.toFixed(2)} €</span></div>
   `;
   document.getElementById('order-overlay').classList.add('active');
   toggleCart();
+  updateShipBanner();
 }
 const sendBtn = document.getElementById('send-order-btn');
 if (sendBtn) {
   sendBtn.disabled = false;
-  sendBtn.innerHTML = 'Envoyer ✉️';
+  sendBtn.innerHTML = '💳 Payer par carte';
   sendBtn.style.opacity = '1';
   sendBtn.style.pointerEvents = 'auto';
 }
@@ -2163,23 +2308,80 @@ function showToast(message, isError = false) {
     toast.classList.remove("show");
   }, 3500);
 }
+function orderFormData() {
+  return {
+    name: document.getElementById('order-name').value.trim(),
+    phone: document.getElementById('order-phone').value.trim(),
+    email: document.getElementById('order-email').value.trim(),
+    address: document.getElementById('order-address').value.trim(),
+    zip: document.getElementById('order-zip').value.trim(),
+    city: document.getElementById('order-city').value.trim(),
+    note: document.getElementById('order-note').value.trim()
+  };
+}
+function setOrderBtn(disabled, label) {
+  const sendBtn = document.getElementById('send-order-btn');
+  if (!sendBtn) return;
+  sendBtn.disabled = disabled;
+  sendBtn.innerHTML = label;
+  sendBtn.style.opacity = disabled ? '0.7' : '1';
+  sendBtn.style.pointerEvents = disabled ? 'none' : 'auto';
+}
+async function payWithStripe() {
+  const f = orderFormData();
+  if (!f.name || !f.phone) {
+    alert('Merci de renseigner votre nom et téléphone.');
+    return;
+  }
+  if (!f.address || !f.zip || !f.city) {
+    alert('Merci de renseigner votre adresse de livraison complète (adresse, code postal, ville).');
+    return;
+  }
+  if (f.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.email)) {
+    alert('Merci de renseigner un email valide.');
+    return;
+  }
+  setOrderBtn(true, '💳 Redirection sécurisée…');
+  const sub = cartSubtotal();
+  const after = sub - (appliedPromo ? sub * (appliedPromo / 100) : 0);
+  const shipping = computeShipping(after);
+  const siteUrl = window.location.origin + window.location.pathname;
+  try {
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        action: 'createCheckout',
+        ...f,
+        promoCode: appliedPromoCode || '',
+        promoReduction: appliedPromo || 0,
+        shipping,
+        items: cart.map(i => ({ id: i.id, name: i.name, fabric: i.fabric || '', qty: i.qty, unitPrice: i.price })),
+        siteUrl
+      })
+    });
+    const data = await res.json();
+    if (data && data.url) {
+      window.location.href = data.url;
+      return;
+    }
+    setOrderBtn(false, '💳 Payer par carte');
+    alert(data && data.message ? data.message : 'Le paiement n\'a pas pu être lancé. Réessayez.');
+  } catch (e) {
+    setOrderBtn(false, '💳 Payer par carte');
+    console.error('Erreur paiement', e);
+    alert('Erreur lors du lancement du paiement. Réessayez dans un instant.');
+  }
+}
 async function sendOrder() {
-  const name  = document.getElementById('order-name').value.trim();
-  const phone = document.getElementById('order-phone').value.trim();
-  const email = document.getElementById('order-email').value.trim();
-  const note  = document.getElementById('order-note').value.trim();
-  
-
-  if (!name || !phone) {
+  const f = orderFormData();
+  if (!f.name || !f.phone) {
     alert('Merci de renseigner votre nom et téléphone.');
     return;
   }
 const sendBtn = document.getElementById('send-order-btn');
 if (sendBtn.disabled) return;
-sendBtn.disabled = true;
-sendBtn.innerHTML = '💌 Envoi...';
-sendBtn.style.opacity = '0.7';
-sendBtn.style.pointerEvents = 'none';
+setOrderBtn(true, '💌 Envoi...');
   const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
 const reduction = appliedPromo ? subtotal * (appliedPromo / 100) : 0;
 const total = subtotal - reduction;
@@ -2197,10 +2399,13 @@ if (GAS_URL) {
     },
     body: JSON.stringify({
       action: 'newOrder',
-      name,
-      phone,
-      email,
-      note,
+      name: f.name,
+      phone: f.phone,
+      email: f.email,
+      address: f.address,
+      zip: f.zip,
+      city: f.city,
+      note: f.note,
       total,
       promoCode: appliedPromoCode || '',
       promoReduction: appliedPromo || 0,
@@ -2223,8 +2428,8 @@ if (GAS_URL) {
     <div class="success-state">
       <div class="success-icon">🌸</div>
       <h3>Commande envoyée !</h3>
-      <p>Merci ${name} ! Votre commande a bien été enregistrée.<br><br>
-Douce Grâce vous recontactera au <strong>${phone}</strong> pour confirmer et organiser la livraison.</p>
+      <p>Merci ${f.name} ! Votre commande a bien été enregistrée.<br><br>
+Douce Grâce vous recontactera au <strong>${f.phone}</strong> pour confirmer et organiser la livraison.</p>
       <br>
       <button class="btn btn-primary" onclick="resetAfterOrder()" style="margin:0 auto;">Continuer mes achats →</button>
     </div>
