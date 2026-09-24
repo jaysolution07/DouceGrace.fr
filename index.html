@@ -55,6 +55,47 @@ body {
   overflow-x: hidden;
 }
 
+/* ── CHOIX DU MODE DE LIVRAISON ── */
+.delivery-choice { display: flex; gap: 10px; }
+.delivery-opt {
+  flex: 1; display: flex; align-items: flex-start; gap: 8px; cursor: pointer;
+  border: 1px solid var(--beige-dark); border-radius: 12px; padding: 12px;
+  transition: all .2s; background: #fff;
+}
+.delivery-opt:hover { border-color: var(--navy-light); }
+.delivery-opt:has(input:checked) { border-color: var(--navy); background: var(--beige-light); }
+.delivery-opt input { margin-top: 3px; accent-color: var(--navy); }
+.delivery-opt span { display: flex; flex-direction: column; }
+.delivery-opt strong { font-size: 13px; color: var(--navy); font-weight: 600; }
+.delivery-opt small { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+
+/* ── LISTE DES POINTS RELAIS ── */
+#relay-block { margin-bottom: 4px; }
+.relay-list { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.relay-item {
+  display: flex; align-items: center; gap: 10px; cursor: pointer;
+  border: 1px solid var(--beige-dark); border-radius: 10px; padding: 11px 13px;
+  background: #fff; transition: all .2s;
+}
+.relay-item:hover { border-color: var(--navy-light); }
+.relay-item.selected { border-color: var(--navy); background: var(--beige-light); }
+.relay-item input { accent-color: var(--navy); flex-shrink: 0; }
+.relay-item .relay-txt { display: flex; flex-direction: column; min-width: 0; }
+.relay-item .relay-name { font-size: 13px; font-weight: 600; color: var(--navy); }
+.relay-item .relay-addr { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+.relay-note {
+  font-size: 11px; color: var(--text-light); margin-top: 8px;
+  background: var(--beige-light); padding: 9px 12px; border-radius: 8px;
+  line-height: 1.5;
+}
+.relay-manual { margin-top: 10px; }
+.relay-manual input {
+  width: 100%; padding: 11px 14px; font-size: 13px; font-family: inherit;
+  border: 1px solid var(--beige-dark); border-radius: 10px;
+  background: #fff; color: var(--text); box-sizing: border-box;
+}
+.relay-manual input:focus { outline: none; border-color: var(--navy-light); }
+
 /* ── PAGE SYSTEM ── */.page {
   display: none;
   min-height: 100vh;
@@ -1539,7 +1580,7 @@ J'ai hâte de partager mes créations avec vous ! 🌸</p>
       <span class="cart-total-label">Total estimé (TTC hors frais de port)</span>
       <span class="cart-total-amount" id="cart-total">0 €</span>
     </div>
-    <p class="cart-note">💡 Ce panier est une demande de commande. Aucun paiement en ligne — Douce Grâce vous contactera pour confirmer et arranger le règlement.</p>
+    <p class="cart-note">💡 Paiement en ligne sécurisé par carte (ou、Apple Pay, Google Pay). Vous pouvez aussi commander sans paiement et être recontactée.</p>
     <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="openOrder()">Envoyer ma commande →</button>
   </div>
 </div>
@@ -1571,17 +1612,46 @@ J'ai hâte de partager mes créations avec vous ! 🌸</p>
     </div>
 
     <div class="form-group">
-      <label>Adresse de livraison</label>
-      <input id="order-address" placeholder="12 rue des Lilas" />
-    </div>
-    <div class="form-row" style="display:flex;gap:12px;">
-      <div class="form-group" style="flex:1;">
-        <label>Code postal</label>
-        <input id="order-zip" placeholder="07000" />
+      <label>Mode de livraison</label>
+      <div class="delivery-choice">
+        <label class="delivery-opt" id="opt-home-label">
+          <input type="radio" name="delivery-mode" value="home" checked onchange="onDeliveryModeChange()" />
+          <span><strong>À domicile</strong><small>Livrée à l'adresse ci-dessous</small></span>
+        </label>
+        <label class="delivery-opt" id="opt-relay-label">
+          <input type="radio" name="delivery-mode" value="relay" onchange="onDeliveryModeChange()" />
+          <span><strong>Point relais</strong><small>Retrait en boutique (souvent moins cher)</small></span>
+        </label>
       </div>
-      <div class="form-group" style="flex:2;">
-        <label>Ville</label>
-        <input id="order-city" placeholder="Gras" />
+    </div>
+
+    <div id="relay-block" style="display:none;">
+      <div class="form-group">
+        <label>Votre code postal <span style="color:var(--text-light);font-weight:400;">(pour chercher les relais)</span></label>
+        <div style="display:flex;gap:8px;">
+          <input id="relay-zip" placeholder="75011" maxlength="5" style="flex:1;" />
+          <button type="button" class="btn btn-outline" onclick="searchRelays()" style="white-space:nowrap;">🔍 Chercher</button>
+        </div>
+      </div>
+      <div id="relay-results"></div>
+      <input type="hidden" id="order-relay-name" value="" />
+      <input type="hidden" id="order-relay-address" value="" />
+    </div>
+
+    <div id="home-block">
+      <div class="form-group">
+        <label>Adresse de livraison</label>
+        <input id="order-address" placeholder="12 rue des Lilas" />
+      </div>
+      <div class="form-row" style="display:flex;gap:12px;">
+        <div class="form-group" style="flex:1;">
+          <label>Code postal</label>
+          <input id="order-zip" placeholder="07000" />
+        </div>
+        <div class="form-group" style="flex:2;">
+          <label>Ville</label>
+          <input id="order-city" placeholder="Gras" />
+        </div>
       </div>
     </div>
 
@@ -2308,16 +2378,119 @@ function showToast(message, isError = false) {
     toast.classList.remove("show");
   }, 3500);
 }
+// ══════════════════════════════════
+//  LIVRAISON : DOMICILE OU POINT RELAIS
+// ══════════════════════════════════
+let selectedRelay = null; // { name, address }
+let relaySearchZip = '';
+let relaySearchCp = '';
+
+function getDeliveryMode() {
+  const checked = document.querySelector('input[name="delivery-mode"]:checked');
+  return checked ? checked.value : 'home';
+}
+
+function onDeliveryModeChange() {
+  const mode = getDeliveryMode();
+  document.getElementById('relay-block').style.display = mode === 'relay' ? 'block' : 'none';
+  document.getElementById('home-block').style.display  = mode === 'relay' ? 'none' : 'block';
+  if (mode !== 'relay') { selectedRelay = null; }
+}
+
+async function searchRelays() {
+  const cp = (document.getElementById('relay-zip').value || '').replace(/\D/g, '').slice(0, 5);
+  const box = document.getElementById('relay-results');
+  if (cp.length !== 5) {
+    box.innerHTML = '<div class="relay-note">Merci de saisir un code postal à 5 chiffres.</div>';
+    return;
+  }
+  box.innerHTML = '<div class="relay-note">🔍 Recherche des points relais…</div>';
+  relaySearchCp = cp;
+
+  try {
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'searchRelays', zip: cp })
+    });
+    const data = await res.json();
+
+    if (data && data.relays && data.relays.length) {
+      box.innerHTML = '<div class="relay-list">' + data.relays.map((r, i) => `
+        <label class="relay-item" data-i="${i}">
+          <input type="radio" name="relay-pick" value="${i}" onchange="selectRelay(${i})" />
+          <span class="relay-txt">
+            <span class="relay-name">${escapeHtml(r.name)}</span>
+            <span class="relay-addr">${escapeHtml(r.address)}</span>
+          </span>
+        </label>`).join('') + '</div>'
+        + '<div class="relay-note">💡 Vous pourrez toujours préciser votre point relais préféré dans les remarques.</div>';
+      return;
+    }
+
+    // Pas de config API ou aucun résultat → saisie libre
+    box.innerHTML = '<div class="relay-note">Aucun point relais trouvé automatiquement pour ce code postal. '
+      + 'Indiquez votre relais préféré ci-dessous (ou dans les remarques).</div>'
+      + '<div class="relay-manual"><input id="relay-manual-input" placeholder="Ex : Relais du Marché, 12 rue de la Poste, 75011 Paris" '
+      + 'oninput="selectManualRelay(this.value)" /></div>';
+
+  } catch (e) {
+    console.error('Recherche relais', e);
+    box.innerHTML = '<div class="relay-note">Recherche indisponible. Indiquez votre relais préféré ci-dessous.</div>'
+      + '<div class="relay-manual"><input id="relay-manual-input" placeholder="Point relais souhaité" '
+      + 'oninput="selectManualRelay(this.value)" /></div>';
+  }
+}
+
+function selectRelay(i) {
+  const items = document.querySelectorAll('#relay-results .relay-item');
+  if (!items[i]) return;
+  items.forEach(el => el.classList.remove('selected'));
+  items[i].classList.add('selected');
+  const name = items[i].querySelector('.relay-name').textContent;
+  const addr = items[i].querySelector('.relay-addr').textContent;
+  selectedRelay = { name: name, address: addr };
+  document.getElementById('order-relay-name').value = name;
+  document.getElementById('order-relay-address').value = addr;
+}
+
+function selectManualRelay(v) {
+  const val = (v || '').trim();
+  if (!val) { selectedRelay = null; return; }
+  selectedRelay = { name: 'Point relais (à confirmer)', address: val };
+  document.getElementById('order-relay-name').value = selectedRelay.name;
+  document.getElementById('order-relay-address').value = val;
+}
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 function orderFormData() {
-  return {
+  const mode = getDeliveryMode();
+  const base = {
     name: document.getElementById('order-name').value.trim(),
     phone: document.getElementById('order-phone').value.trim(),
     email: document.getElementById('order-email').value.trim(),
-    address: document.getElementById('order-address').value.trim(),
-    zip: document.getElementById('order-zip').value.trim(),
-    city: document.getElementById('order-city').value.trim(),
-    note: document.getElementById('order-note').value.trim()
+    note: document.getElementById('order-note').value.trim(),
+    deliveryMode: mode,
+    relayName: mode === 'relay' && selectedRelay ? selectedRelay.name : '',
+    relayAddress: mode === 'relay' && selectedRelay ? selectedRelay.address : '',
+    relayZip: mode === 'relay' ? relaySearchCp : ''
   };
+  if (mode === 'relay') {
+    // L'adresse du relais remplace l'adresse postale
+    base.address = base.relayAddress;
+    base.zip = relaySearchCp;
+    base.city = '';
+  } else {
+    base.address = document.getElementById('order-address').value.trim();
+    base.zip = document.getElementById('order-zip').value.trim();
+    base.city = document.getElementById('order-city').value.trim();
+  }
+  return base;
 }
 function setOrderBtn(disabled, label) {
   const sendBtn = document.getElementById('send-order-btn');
@@ -2333,7 +2506,12 @@ async function payWithStripe() {
     alert('Merci de renseigner votre nom et téléphone.');
     return;
   }
-  if (!f.address || !f.zip || !f.city) {
+  if (f.deliveryMode === 'relay') {
+    if (!f.relayName) {
+      alert('Merci de choisir un point relais (bouton « Chercher ») ou d’indiquer votre relais préféré.');
+      return;
+    }
+  } else if (!f.address || !f.zip || !f.city) {
     alert('Merci de renseigner votre adresse de livraison complète (adresse, code postal, ville).');
     return;
   }
@@ -2377,6 +2555,15 @@ async function sendOrder() {
   const f = orderFormData();
   if (!f.name || !f.phone) {
     alert('Merci de renseigner votre nom et téléphone.');
+    return;
+  }
+  if (f.deliveryMode === 'relay') {
+    if (!f.relayName) {
+      alert('Merci de choisir un point relais (bouton « Chercher ») ou d’indiquer votre relais préféré.');
+      return;
+    }
+  } else if (!f.address || !f.zip || !f.city) {
+    alert('Merci de renseigner votre adresse de livraison complète (adresse, code postal, ville).');
     return;
   }
 const sendBtn = document.getElementById('send-order-btn');
