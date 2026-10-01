@@ -2381,7 +2381,8 @@ function showToast(message, isError = false) {
 // ══════════════════════════════════
 //  LIVRAISON : DOMICILE OU POINT RELAIS
 // ══════════════════════════════════
-let selectedRelay = null; // { name, address }
+let selectedRelay = null; // { name, address, id }
+let relayResults = []; // résultats de la dernière recherche Sendcloud
 let relaySearchZip = '';
 let relaySearchCp = '';
 
@@ -2414,7 +2415,7 @@ async function searchRelays() {
       body: JSON.stringify({ action: 'searchRelays', zip: cp })
     });
     const data = await res.json();
-
+    relayResults = (data && data.relays) || [];
     if (data && data.relays && data.relays.length) {
       box.innerHTML = '<div class="relay-list">' + data.relays.map((r, i) => `
         <label class="relay-item" data-i="${i}">
@@ -2449,7 +2450,7 @@ function selectRelay(i) {
   items[i].classList.add('selected');
   const name = items[i].querySelector('.relay-name').textContent;
   const addr = items[i].querySelector('.relay-addr').textContent;
-  selectedRelay = { name: name, address: addr };
+  selectedRelay = { name: name, address: addr, id: (relayResults[i] && relayResults[i].id) || '' };
   document.getElementById('order-relay-name').value = name;
   document.getElementById('order-relay-address').value = addr;
 }
@@ -2457,7 +2458,7 @@ function selectRelay(i) {
 function selectManualRelay(v) {
   const val = (v || '').trim();
   if (!val) { selectedRelay = null; return; }
-  selectedRelay = { name: 'Point relais (à confirmer)', address: val };
+  selectedRelay = { name: 'Point relais (à confirmer)', address: val, id: '' };
   document.getElementById('order-relay-name').value = selectedRelay.name;
   document.getElementById('order-relay-address').value = val;
 }
@@ -2478,6 +2479,7 @@ function orderFormData() {
     deliveryMode: mode,
     relayName: mode === 'relay' && selectedRelay ? selectedRelay.name : '',
     relayAddress: mode === 'relay' && selectedRelay ? selectedRelay.address : '',
+    relayId: mode === 'relay' && selectedRelay ? (selectedRelay.id || '') : '',
     relayZip: mode === 'relay' ? relaySearchCp : ''
   };
   if (mode === 'relay') {
