@@ -397,8 +397,18 @@ nav.scrolled { box-shadow: 0 4px 24px rgba(30,45,74,0.08); }
   font-size: 14px;
 }
 
-.filter-btn {
-  padding: 11px 20px;
+/* menu déroulant des catégories (remplace les anciennes bulles) */
+.cat-select-wrap {
+  position: relative;
+  flex: 0 1 auto;
+}
+.cat-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 100%;
+  min-width: 230px;
+  padding: 11px 42px 11px 20px;
   border-radius: 50px;
   border: 1.5px solid var(--beige-mid);
   background: white;
@@ -407,14 +417,24 @@ nav.scrolled { box-shadow: 0 4px 24px rgba(30,45,74,0.08); }
   font-weight: 500;
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: var(--text-light);
+  color: var(--navy);
   cursor: pointer;
-  transition: all 0.2s;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
-.filter-btn.active, .filter-btn:hover {
-  background: var(--navy);
-  color: white;
-  border-color: var(--navy);
+.cat-select:hover,
+.cat-select:focus {
+  border-color: var(--navy-light);
+  box-shadow: 0 0 0 3px rgba(74, 100, 144, 0.08);
+}
+.cat-select-arrow {
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 11px;
+  color: var(--navy);
+  pointer-events: none;
 }
 
 /* products grid */
@@ -1146,6 +1166,15 @@ nav.scrolled { box-shadow: 0 4px 24px rgba(30,45,74,0.08); }
     max-width: 100%;
   }
 
+  .cat-select-wrap {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+
+  .cat-select {
+    min-width: 0;
+  }
+
   .modal {
     padding: 22px 16px;
     border-radius: 18px;
@@ -1520,11 +1549,12 @@ J'ai hâte de partager mes créations avec vous ! 🌸</p>
       <div class="search-wrap">
         <input type="text" id="search-input" placeholder="Rechercher une création…" oninput="filterProducts()">
       </div>
-      <div id="filter-buttons" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
-  <div class="skeleton-line" style="width:70px;height:40px;border-radius:50px;"></div>
-  <div class="skeleton-line" style="width:90px;height:40px;border-radius:50px;"></div>
-  <div class="skeleton-line" style="width:110px;height:40px;border-radius:50px;"></div>
-</div>
+      <div class="cat-select-wrap">
+        <select id="category-select" class="cat-select" aria-label="Filtrer par catégorie" onchange="setFilter(this)">
+          <option value="">Toutes les catégories</option>
+        </select>
+        <span class="cat-select-arrow" aria-hidden="true">▾</span>
+      </div>
     </div>
   </div>
 
@@ -1774,13 +1804,22 @@ async function loadProductsFromSheet() {
     PRODUCTS = data.apps || [];
     isLoadingProducts = false;
     // mettre à jour les catégories dynamiques
-    const filterWrap = document.getElementById('filter-buttons');
-    if (filterWrap && data.categories) {
-      filterWrap.innerHTML =
-        `<button class="filter-btn active" data-cat="" onclick="setFilter(this)">Tout</button>` +
-        data.categories.map(cat =>
-          `<button class="filter-btn" data-cat="${cat}" onclick="setFilter(this)">${cat}</button>`
-        ).join('');
+    const catSelect = document.getElementById('category-select');
+    if (catSelect && Array.isArray(data.categories)) {
+      catSelect.innerHTML = '';
+      const allOpt = document.createElement('option');
+      allOpt.value = '';
+      allOpt.textContent = 'Toutes les catégories';
+      catSelect.appendChild(allOpt);
+      data.categories.forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat;
+        opt.textContent = cat;
+        catSelect.appendChild(opt);
+      });
+      // on conserve la catégorie choisie si elle existe toujours
+      catSelect.value = data.categories.includes(activeFilter) ? activeFilter : '';
+      activeFilter = catSelect.value;
     }
 
     renderProducts();
@@ -2050,10 +2089,8 @@ function selectFabric(e, productId, fabricIdx) {
   renderProducts();
 }
 
-function setFilter(btn) {
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  activeFilter = btn.dataset.cat;
+function setFilter(select) {
+  activeFilter = select.value;
   filterProducts();
 }
 
