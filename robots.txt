@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://jaysolution07.github.io/DouceGrace.fr/sitemap.xml
