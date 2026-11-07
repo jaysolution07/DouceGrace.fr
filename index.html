@@ -2013,7 +2013,7 @@ if (isLoadingProducts) {
   </div>` : '';
 
     return `
-      <div class="product-card" onclick="${p.outOfStock ? '' : `openDetail(${p.id})`}" style="${p.outOfStock ? 'opacity:0.5;filter:grayscale(1);' : ''}">
+      <div class="product-card" onclick="${p.outOfStock ? '' : `openDetail('${p.id}')`}" style="${p.outOfStock ? 'opacity:0.5;filter:grayscale(1);' : ''}">
         <div class="product-img">
   ${p.image
     ? `<img src="${imgSrc(p.image, 500)}" alt="${p.name}" data-emoji="${p.emoji || '🧵'}" loading="lazy" decoding="async" onerror="imgFail(this)">`
