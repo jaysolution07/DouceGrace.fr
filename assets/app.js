@@ -146,7 +146,7 @@ function toggleNav() {
 }
 
 function showPage(name) {
-  const pages = { home: 'index.html', shop: 'boutique.html', fabrics: 'tissus.html' };
+  const pages = { home: '../', shop: '../boutique/', fabrics: '../tissus/' };
   if (pages[name]) window.location.href = pages[name];
 }
 
