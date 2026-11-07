@@ -1294,3 +1294,22 @@ body.ship-info-on .shop-header { padding-top: 135px; }
 /* ── pages multiples ── */
 .shop-title { margin: 0 0 8px; }
 .nav-links a.active { color: var(--navy); }
+.nav-burger { display: none; background: none; border: none; font-size: 22px; line-height: 1; color: var(--navy); cursor: pointer; padding: 6px; }
+@media (max-width: 768px) {
+  .nav-burger { display: inline-flex; align-items: center; }
+  .nav-links.open {
+    display: flex;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    gap: 16px;
+    background: var(--beige-light);
+    padding: 18px 24px 22px;
+    border-bottom: 1px solid var(--beige-mid);
+    box-shadow: 0 16px 28px rgba(30,45,74,0.12);
+    z-index: 80;
+  }
+  .nav-links.open a { font-size: 13px; }
+}

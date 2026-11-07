@@ -137,6 +137,14 @@ async function loadShipConfig() {
 // ══════════════════════════════════
 //  PAGE NAVIGATION
 // ══════════════════════════════════
+function toggleNav() {
+  const links = document.querySelector('.nav-links');
+  if (!links) return;
+  const open = links.classList.toggle('open');
+  const btn = document.querySelector('.nav-burger');
+  if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+
 function showPage(name) {
   const pages = { home: 'index.html', shop: 'boutique.html', fabrics: 'tissus.html' };
   if (pages[name]) window.location.href = pages[name];

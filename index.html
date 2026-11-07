@@ -77,13 +77,14 @@
 <body>
 <nav id="main-nav">
   <a class="nav-brand" href="index.html">Douce Grâce</a>
-  <ul class="nav-links">
+  <ul class="nav-links" id="nav-links-list">
     <li><a href="index.html" class="active">Accueil</a></li>
     <li><a href="boutique.html">Boutique</a></li>
     <li><a href="tissus.html">Tissus</a></li>
     <li><a href="index.html#contact">Contact</a></li>
   </ul>
   <div class="nav-right">
+    <button class="nav-burger" onclick="toggleNav()" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="nav-links-list">☰</button>
     <a href="tel:0750483818" class="nav-tel">📞 07 50 48 38 18</a>
     <button class="cart-btn" onclick="toggleCart()">
       🛒
