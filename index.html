@@ -1762,13 +1762,13 @@ J'ai hâte de partager mes créations avec vous ! 🌸</p>
 const GAS_URL = "https://script.google.com/macros/s/AKfycbzC2zM9G4rgXWK5YyFpIw4b6xQDciw_FbMvZ3Sq_oefyeXOGTHBIh-xzUW-f4bc4NLw/exec";
 
 // Convertit toute URL Google Drive en URL d'image directe (lh3 = sans redirection)
-function imgSrc(url) {
+function imgSrc(url, width) {
   url = String(url || '').trim();
   if (!url) return '';
   let m = url.match(new RegExp('/file/d/([a-zA-Z0-9_-]+)'));
-  if (m) return 'https://lh3.googleusercontent.com/d/' + m[1];
-  m = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-  if (m) return 'https://lh3.googleusercontent.com/d/' + m[1];
+  if (!m) m = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (!m) m = url.match(/googleusercontent\.com\/d\/([a-zA-Z0-9_-]+)/);
+  if (m) return 'https://lh3.googleusercontent.com/d/' + m[1] + (width ? '=w' + width : '');
   return url;
 }
 // Secours : si l'image ne charge pas, on affiche l'emoji à la place
@@ -2016,7 +2016,7 @@ if (isLoadingProducts) {
       <div class="product-card" onclick="${p.outOfStock ? '' : `openDetail(${p.id})`}" style="${p.outOfStock ? 'opacity:0.5;filter:grayscale(1);' : ''}">
         <div class="product-img">
   ${p.image
-    ? `<img src="${imgSrc(p.image)}" alt="${p.name}" data-emoji="${p.emoji || '🧵'}" onerror="imgFail(this)">`
+    ? `<img src="${imgSrc(p.image, 500)}" alt="${p.name}" data-emoji="${p.emoji || '🧵'}" loading="lazy" decoding="async" onerror="imgFail(this)">`
     : `<div class="product-img-placeholder">${p.emoji}</div>`}
   ${(p.images && p.images.length > 1) ? '<span class="product-badge photos">📷 ' + p.images.length + '</span>' : ''}
   ${p.custom ? '<span class="product-badge custom">Tissu au choix</span>' : ''}
@@ -2069,7 +2069,7 @@ function renderFabrics() {
       <div class="product-img">
         ${
           f.image
-            ? `<img src="${imgSrc(f.image)}" alt="${f.name}" onerror="imgFail(this,'🧵')">`
+            ? `<img src="${imgSrc(f.image, 500)}" alt="${f.name}" loading="lazy" decoding="async" onerror="imgFail(this,'🧵')">`
             : `<div class="product-img-placeholder">🧵</div>`
         }
         ${!f.active ? '<span class="product-badge custom">Rupture de stock</span>' : ''}
@@ -2314,11 +2314,11 @@ if (p.outOfStock) return;
   const visual = photos.length ? `
     <div class="detail-gallery">
       <div class="detail-gallery-main">
-        <img id="detail-main-img" src="${imgSrc(photos[0])}" alt="${p.name}" onerror="imgFail(this,'🖼️')">
+        <img id="detail-main-img" src="${imgSrc(photos[0], 1000)}" alt="${p.name}" decoding="async" onerror="imgFail(this,'🖼️')">
       </div>
       ${photos.length > 1 ? `
       <div class="detail-thumbs">
-        ${photos.map((ph, i) => `<img src="${imgSrc(ph)}" class="${i === 0 ? 'active' : ''}" onclick="setDetailImg(${i})" onerror="this.style.display='none'">`).join('')}
+        ${photos.map((ph, i) => `<img src="${imgSrc(ph, 200)}" data-full="${imgSrc(ph, 1000)}" class="${i === 0 ? 'active' : ''}" loading="lazy" decoding="async" onclick="setDetailImg(${i})" onerror="this.style.display='none'">`).join('')}
       </div>` : ''}
     </div>` : p.emoji;
 
@@ -2357,7 +2357,7 @@ function setDetailImg(i) {
   const main = document.getElementById('detail-main-img');
   const thumbs = document.querySelectorAll('.detail-thumbs img');
   if (!main || !thumbs[i] || thumbs[i].style.display === 'none') return;
-  main.src = thumbs[i].src;
+  main.src = thumbs[i].dataset.full || thumbs[i].src;
   thumbs.forEach((t, j) => t.classList.toggle('active', j === i));
 }
 function closeDetail() {
