@@ -235,13 +235,31 @@ function showPage(name) {
   if (pages[name]) window.location.href = pages[name];
 }
 
+
+// Prépare la liste des tissus pendant que l'accueil est lu : le clic vers
+// /tissus/ trouve alors le catalogue déjà en cache.
+function prechargerTissus() {
+  const lancer = () => {
+    if (document.getElementById('fabrics-grid')) return; // déjà affichés
+    if (lireCache(CACHE_TISSUS)) return;                  // déjà en cache
+    fetchJson(GAS_URL + '?action=getFabrics', DELAI_MAX)
+      .then(data => ecrireCache(CACHE_TISSUS, data.fabrics || []))
+      .catch(() => { /* silencieux : ce n'est qu'une avance */ });
+  };
+  if (typeof requestIdleCallback === 'function') requestIdleCallback(lancer, { timeout: 3000 });
+  else setTimeout(lancer, 1200);
+}
+
 // Init on load
 document.addEventListener('DOMContentLoaded', function() {
   observeReveal();
 
   updateCartUI();
   loadProductsFromSheet();
+  // Tissus : chargés ici s'il y a une grille, sinon préparés en arrière-plan
+  // pour que le clic vers /tissus/ soit instantané.
   if (document.getElementById('fabrics-grid')) loadFabricsFromSheet();
+  else prechargerTissus();
   loadShipConfig();
   handleStripeReturn();
 });
