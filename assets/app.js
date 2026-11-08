@@ -39,46 +39,123 @@ const FABRICS = [
 let PRODUCTS = [];
 let FABRIC_CATALOG = [];
 let isLoadingProducts = true;
-async function loadProductsFromSheet() {
-  try {
-    const res = await fetch(GAS_URL + "?action=getProducts");
-    const data = await res.json();
+// ── CACHE LOCAL DU CATALOGUE ─────────────────────────────────────────────
+// Le catalogue est gardé sur l'appareil : à la visite suivante il s'affiche
+// tout de suite, puis se met à jour en arrière-plan pendant que la page est lue.
+const CACHE_PRODUITS = 'doucegrace_produits_v1';
+const CACHE_TISSUS = 'doucegrace_tissus_v1';
+const DELAI_MAX = 15000; // au-delà, on prévient au lieu de laisser la grille vide
 
+function lireCache(cle) {
+  try {
+    const brut = localStorage.getItem(cle);
+    if (!brut) return null;
+    const data = JSON.parse(brut);
+    return data && Array.isArray(data.items) && data.items.length ? data : null;
+  } catch (e) { return null; }
+}
+function ecrireCache(cle, items, extra) {
+  try {
+    localStorage.setItem(cle, JSON.stringify(Object.assign({ items: items, at: Date.now() }, extra || {})));
+  } catch (e) { /* stockage plein ou bloqué : on continue sans cache */ }
+}
+
+// Récupère du JSON avec un délai maximal, pour ne jamais attendre indéfiniment
+function fetchJson(url, timeoutMs) {
+  return new Promise((resolve, reject) => {
+    const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    const minuteur = setTimeout(() => {
+      if (ctrl) ctrl.abort();
+      reject(new Error('Délai dépassé'));
+    }, timeoutMs || DELAI_MAX);
+    fetch(url, ctrl ? { signal: ctrl.signal } : {})
+      .then(res => res.json())
+      .then(data => { clearTimeout(minuteur); resolve(data); })
+      .catch(err => { clearTimeout(minuteur); reject(err); });
+  });
+}
+
+// Message clair + bouton si le serveur ne répond pas, au lieu d'une page vide
+function erreurGrille(gridId, titre, relance) {
+  const grid = document.getElementById(gridId);
+  if (!grid) return;
+  window.__relanceGrille = relance;
+  grid.innerHTML =
+    '<div class="no-results">' + titre + '<br>' +
+    '<span style="font-size:13px;opacity:.75">La connexion est peut-être lente. Réessayez dans un instant.</span>' +
+    '<br><button class="btn btn-outline" style="margin-top:18px" onclick="relancerGrille()">↻ Réessayer</button></div>';
+}
+function relancerGrille() {
+  if (typeof window.__relanceGrille === 'function') window.__relanceGrille();
+}
+
+// Catégories du menu déroulant, gardées d'une visite à l'autre
+function appliquerCategories(categories) {
+  const catSelect = document.getElementById('category-select');
+  if (!catSelect || !Array.isArray(categories)) return;
+  catSelect.innerHTML = '';
+  const allOpt = document.createElement('option');
+  allOpt.value = '';
+  allOpt.textContent = 'Toutes les catégories';
+  catSelect.appendChild(allOpt);
+  categories.forEach(cat => {
+    const opt = document.createElement('option');
+    opt.value = cat;
+    opt.textContent = cat;
+    catSelect.appendChild(opt);
+  });
+  // on conserve la catégorie choisie si elle existe toujours
+  catSelect.value = categories.includes(activeFilter) ? activeFilter : '';
+  activeFilter = catSelect.value;
+}
+
+async function loadProductsFromSheet() {
+  const cache = lireCache(CACHE_PRODUITS);
+  if (cache) {
+    // Affichage immédiat de la dernière version connue
+    PRODUCTS = cache.items;
+    isLoadingProducts = false;
+    appliquerCategories(cache.categories);
+    renderProducts();
+  } else {
+    isLoadingProducts = true;
+    renderProducts(); // cartes fantômes tout de suite
+  }
+
+  try {
+    const data = await fetchJson(GAS_URL + "?action=getProducts", DELAI_MAX);
     PRODUCTS = data.apps || [];
     isLoadingProducts = false;
-    // mettre à jour les catégories dynamiques
-    const catSelect = document.getElementById('category-select');
-    if (catSelect && Array.isArray(data.categories)) {
-      catSelect.innerHTML = '';
-      const allOpt = document.createElement('option');
-      allOpt.value = '';
-      allOpt.textContent = 'Toutes les catégories';
-      catSelect.appendChild(allOpt);
-      data.categories.forEach(cat => {
-        const opt = document.createElement('option');
-        opt.value = cat;
-        opt.textContent = cat;
-        catSelect.appendChild(opt);
-      });
-      // on conserve la catégorie choisie si elle existe toujours
-      catSelect.value = data.categories.includes(activeFilter) ? activeFilter : '';
-      activeFilter = catSelect.value;
-    }
-
+    appliquerCategories(data.categories);
+    ecrireCache(CACHE_PRODUITS, PRODUCTS, { categories: data.categories || [] });
     renderProducts();
   } catch (e) {
     console.error("Erreur chargement produits", e);
+    isLoadingProducts = false;
+    if (!PRODUCTS.length) {
+      erreurGrille('products-grid', "Les créations n'arrivent pas pour le moment.", loadProductsFromSheet);
+    }
   }
 }
 async function loadFabricsFromSheet() {
-  try {
-    const res = await fetch(GAS_URL + "?action=getFabrics");
-    const data = await res.json();
-    FABRIC_CATALOG = data.fabrics || [];
+  const cache = lireCache(CACHE_TISSUS);
+  if (cache) {
+    FABRIC_CATALOG = cache.items;
+    renderFabrics();
+  } else {
+    renderFabrics(); // tuiles fantômes tout de suite
+  }
 
-renderFabrics();
+  try {
+    const data = await fetchJson(GAS_URL + "?action=getFabrics", DELAI_MAX);
+    FABRIC_CATALOG = data.fabrics || [];
+    ecrireCache(CACHE_TISSUS, FABRIC_CATALOG);
+    renderFabrics();
   } catch (e) {
     console.error("Erreur chargement tissus", e);
+    if (!FABRIC_CATALOG.length) {
+      erreurGrille('fabrics-grid', "Les tissus n'arrivent pas pour le moment.", loadFabricsFromSheet);
+    }
   }
 }
 // ══════════════════════════════════
@@ -125,10 +202,18 @@ function updateShipBanner() {
 }
 async function loadShipConfig() {
   try {
-    const res = await fetch(GAS_URL + '?action=getConfig');
-    const data = await res.json();
+    const data = await fetchJson(GAS_URL + '?action=getConfig', DELAI_MAX);
     if (data && data.shippingFee != null) SHIP_CONFIG = data;
-  } catch (e) { console.warn('Config livraison indisponible', e); }
+    else {
+      const garde = lireCache('doucegrace_livraison_v1');
+      if (garde) SHIP_CONFIG = garde.items[0] || SHIP_CONFIG;
+    }
+  } catch (e) {
+    console.warn('Config livraison indisponible', e);
+    const garde = lireCache('doucegrace_livraison_v1');
+    if (garde) SHIP_CONFIG = garde.items[0] || SHIP_CONFIG;
+  }
+  try { ecrireCache('doucegrace_livraison_v1', [SHIP_CONFIG]); } catch (e) {}
   const info = document.getElementById('ship-info');
   if (info) info.classList.add('show');
   document.body.classList.add('ship-info-on');
