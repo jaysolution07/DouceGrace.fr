@@ -515,6 +515,8 @@ function addToCart(productId) {
     existing.qty++;
   } else {
     cart.push({ id: productId, name: p.name, price: p.price, emoji: p.emoji, qty: 1,
+      image: p.image || '',
+      custom: !!p.custom,
       fabric: fabric.length ? fabric.join(', ') : null,
 fabricColor: null,
       fabricIdx: selectedFabrics[productId] !== undefined ? selectedFabrics[productId] : null
@@ -557,6 +559,14 @@ function updateCartUI() {
   renderCartPanel();
 }
 
+function imgPanierFail(img) {
+  img.onerror = null;
+  const span = document.createElement('span');
+  span.style.fontSize = '24px';
+  span.textContent = img.dataset.emoji || '🧵';
+  img.replaceWith(span);
+}
+
 function renderCartPanel() {
   const el = document.getElementById('cart-items');
   const foot = document.getElementById('cart-foot');
@@ -573,16 +583,24 @@ function renderCartPanel() {
   }
 
   foot.style.display = 'block';
-  el.innerHTML = cart.map((item, idx) => `
+  el.innerHTML = cart.map((item, idx) => {
+    // Article du stock : on montre sa photo, et on ne parle pas de tissu.
+    const prod = PRODUCTS.find(x => String(x.id) === String(item.id));
+    const image = item.image || (prod && prod.image) || '';
+    const surMesure = item.custom !== undefined ? item.custom : !!(prod && prod.custom);
+    const tissu = item.fabric ? '🎨 ' + item.fabric : (surMesure ? 'Tissu non sélectionné' : '');
+    return `
     <div class="cart-item">
       <div class="cart-item-img">
         ${item.fabricColor
           ? `<div style="width:100%;height:100%;background:${item.fabricColor};border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px;">${item.emoji}</div>`
-          : item.emoji}
+          : (image
+              ? `<img src="${imgSrc(image, 160)}" alt="${item.name}" loading="lazy" decoding="async" data-emoji="${item.emoji || '🧵'}" onerror="imgPanierFail(this)">`
+              : (item.emoji || '🧵'))}
       </div>
       <div class="cart-item-info">
         <div class="cart-item-name">${item.name}</div>
-        <div class="cart-item-detail">${item.fabric ? '🎨 ' + item.fabric : 'Tissu non sélectionné'}</div>
+        ${tissu ? '<div class="cart-item-detail">' + tissu + '</div>' : ''}
         <div class="cart-item-qty">
           <button class="qty-btn" onclick="changeQty(${idx}, -1)">−</button>
           <span class="qty-val">${item.qty}</span>
@@ -592,7 +610,7 @@ function renderCartPanel() {
       </div>
       <div class="cart-item-price">${item.price * item.qty} €</div>
     </div>
-  `).join('');
+  `; }).join('');
 
   let subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
 let reduction = 0;
